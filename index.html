@@ -9,7 +9,7 @@
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <style>
-        :root { --paper: #fcfaf5; --ink: #1a1a1a; --border: #2f2f2f; --accent: #8b0000; --dim: #666; --gold: #b8860b; --opinion: #f4f1ea; }
+        :root { --paper: #fcfaf5; --ink: #1a1a1a; --border: #2f2f2f; --accent: #8b0000; --dim: #666; --gold: #b8860b; }
         
         body::before {
             content: ""; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -39,46 +39,31 @@
         .content-grid { display: grid; grid-template-columns: 2.2fr 1fr; gap: 40px; }
         @media (max-width: 850px) { .content-grid { grid-template-columns: 1fr; } }
         
-        /* DEEP READER STABILISIERUNG */
         .reader-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.96); z-index: 1000; overflow-y: auto; display: block; }
         .reader-content { 
-            background: var(--paper); 
-            max-width: 750px; 
-            width: 92%; 
-            margin: 40px auto; 
-            padding: clamp(20px, 5vw, 50px); 
-            box-shadow: 0 0 100px black; 
-            box-sizing: border-box;
-            overflow-wrap: break-word;
-            word-wrap: break-word;
-            hyphens: auto;
+            background: var(--paper); max-width: 750px; width: 92%; margin: 40px auto; 
+            padding: clamp(20px, 5vw, 50px); box-shadow: 0 0 100px black; box-sizing: border-box;
+            overflow-wrap: break-word; word-wrap: break-word; hyphens: auto;
         }
 
         .reader-body { line-height: 1.8; font-size: 1.15rem; width: 100%; display: block; }
-        
-        /* THUMBNAIL-LOGIK FÜR BILDER */
-        .reader-body img, .reader-body figure, .reader-body picture { 
-            display: block !important; 
-            float: none !important; 
-            clear: both !important; 
-            max-width: 300px !important; /* Thumbnail-Größe */
-            width: 100% !important;
-            height: auto !important; 
-            margin: 20px auto !important; 
-            border: 4px solid #fff; 
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-
-        .reader-body p { margin-bottom: 1.2em; clear: both; }
+        .reader-body img { display: block !important; float: none !important; clear: both !important; max-width: 300px !important; width: 100% !important; height: auto !important; margin: 25px auto !important; border: 4px solid #fff; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .reader-body p { margin-bottom: 1.5em; clear: both; }
 
         .article { border-bottom: 1px solid #ccc; padding-bottom: 25px; margin-bottom: 25px; }
-        .article h3 { font-size: 1.5rem; margin: 0 0 10px 0; line-height: 1.2; cursor: pointer; }
+        .article h3 { font-size: 1.5rem; margin: 0 0 10px 0; line-height: 1.2; cursor: pointer; transition: color 0.2s; }
+        .article h3:hover { color: var(--accent); }
         .article-source { font-family: Arial; font-size: 0.65rem; color: var(--accent); font-weight: 900; margin-bottom: 8px; display: flex; justify-content: space-between; }
         .cluster-box { background: #f0ede6; padding: 12px; margin-top: 15px; border-left: 4px solid var(--gold); font-size: 0.85rem; text-align: left; }
         .bookmark-btn { cursor: pointer; font-size: 1.1rem; filter: grayscale(1); opacity: 0.4; }
         .bookmark-btn.active { filter: grayscale(0); opacity: 1; }
         .loading-bar { height: 3px; background: var(--accent); width: 100%; animation: load 2s infinite; margin-bottom: 30px;}
         @keyframes load { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+
+        .quote-box { font-style: italic; color: var(--dim); padding: 20px; border: 1px dashed #ccc; background: #fffdf9; margin-top: 20px; }
+        .lead-article { border-bottom: 2px solid var(--ink); padding-bottom: 30px; margin-bottom: 30px; text-align: center; }
+        .lead-article h2 { font-size: clamp(1.8rem, 5vw, 2.8rem); margin: 15px 0; line-height: 1.1; cursor: pointer; transition: color 0.2s; }
+        .lead-article h2:hover { color: var(--accent); }
     </style>
 </head>
 <body>
@@ -95,10 +80,18 @@
         const FEEDS = {
             "Politik": [{ n: "DLF", u: "https://www.deutschlandfunk.de/nachrichten-100.rss" }, { n: "Tagesschau", u: "https://www.tagesschau.de/newsticker.rss" }],
             "Wirtschaft": [{ n: "Handelsblatt", u: "https://www.handelsblatt.com/contentexport/feed/topthemen/" }, { n: "WiWo", u: "https://www.wiwo.de/contentexport/feed/rss/schlagzeilen" }],
+            "Wissen": [
+                { n: "Spektrum", u: "https://www.spektrum.de/rss/spektrum-alle-news.xml" },
+                { n: "Scinexx", u: "https://www.scinexx.de/feed/" },
+                { n: "FAZ Wissen", u: "https://www.faz.net/rss/aktuell/wissen/" }
+            ],
             "Debatte": [{ n: "Eurotopics", u: "https://www.eurotopics.net/de/home/rss/" }, { n: "NZZ Meinung", u: "https://www.nzz.ch/meinung.rss" }],
             "Sport": [{ n: "Kicker", u: "https://newsfeed.kicker.de/news/aktuell" }, { n: "Sportschau", u: "https://www.sportschau.de/index~rss2.xml" }],
             "Technik": [{ n: "Heise", u: "https://www.heise.de/rss/heise-atom.xml" }, { n: "Golem", u: "https://www.golem.de/rss.php?feed=RSS2.0" }],
-            "Depeschen": [{ n: "UN News", u: "https://news.un.org/feed/subscribe/en/news/all/rss.xml" }, { n: "TS Ticker", u: "https://www.tagesschau.de/infosocial/newsticker/index~rss2.xml" }]
+            "International": [
+                { n: "DW International", u: "https://rss.dw.com/xml/rss-de-all" },
+                { n: "Eurotopics Welt", u: "https://www.eurotopics.net/de/home/rss/" }
+            ]
         };
 
         const safeDecode = (buf) => {
@@ -130,12 +123,14 @@
                     const res = await fetch(`https://corsproxy.io/?${encodeURIComponent(FEEDS["Politik"][0].u)}`);
                     const buf = await res.arrayBuffer();
                     const doc = new DOMParser().parseFromString(safeDecode(buf), "text/xml");
-                    const entries = Array.from(doc.querySelectorAll("item, entry")).map(e => ({
+                    const entries = Array.from(doc.querySelectorAll("item, entry")).slice(0, 5).map(e => ({
                         id: e.querySelector("link")?.textContent || Math.random().toString(),
                         title: e.querySelector("title")?.textContent || "",
+                        link: e.querySelector("link")?.textContent || e.querySelector("link")?.getAttribute("href") || "#",
                         desc: (e.querySelector("description, summary")?.textContent || "").replace(/<[^>]*>?/gm, ''),
                         full: e.querySelector("content\\:encoded, description")?.textContent || "",
-                        src: FEEDS["Politik"][0].n
+                        src: FEEDS["Politik"][0].n,
+                        date: new Date(e.querySelector("pubDate, published, updated")?.textContent).getTime() || Date.now()
                     }));
                     setHomeItems(entries);
                 } catch (e) {}
@@ -153,7 +148,7 @@
                         all = [...all, ...Array.from(doc.querySelectorAll("item, entry")).map(e => ({
                             id: e.querySelector("link")?.textContent || Math.random().toString(),
                             title: (e.querySelector("title")?.textContent || "").trim(),
-                            link: e.querySelector("link")?.textContent || "#",
+                            link: e.querySelector("link")?.textContent || e.querySelector("link")?.getAttribute("href") || "#",
                             desc: (e.querySelector("description, summary")?.textContent || "").replace(/<[^>]*>?/gm, ''),
                             full: e.querySelector("content\\:encoded, description")?.textContent || "",
                             src: f.n,
@@ -184,10 +179,11 @@
                     {activeArt && (
                         <div className="reader-overlay">
                             <div className="reader-content">
-                                <button onClick={() => setActiveArt(null)} style={{cursor:'pointer', border:'none', background:'none', fontWeight:'bold', marginBottom:'20px'}}>← ZURÜCK</button>
-                                <h2 style={{fontSize:'1.8rem', lineHeight:1.2, marginBottom:'20px'}}>{activeArt.title}</h2>
+                                <button onClick={() => setActiveArt(null)} style={{cursor:'pointer', border:'none', background:'none', fontWeight:'bold', marginBottom:'30px', fontFamily:'Arial'}}>← ZURÜCK</button>
+                                <span style={{display:'block', fontFamily:'Arial', color:'var(--accent)', fontSize:'0.7rem', fontWeight:'900', marginBottom:'10px'}}>{activeArt.src}</span>
+                                <h2 style={{fontSize:'clamp(1.6rem, 5vw, 2.5rem)', lineHeight:1.1, marginBottom:'30px'}}>{activeArt.title}</h2>
                                 <div className="reader-body" dangerouslySetInnerHTML={{ __html: activeArt.full || activeArt.desc }}></div>
-                                <a href={activeArt.link} target="_blank" rel="noreferrer" style={{display:'block', marginTop:'30px', color:'var(--accent)', fontWeight:'bold', textDecoration:'none', border:'1px solid var(--accent)', padding:'10px', textAlign:'center'}}>IM ORIGINAL LESEN</a>
+                                <a href={activeArt.link} target="_blank" rel="noreferrer" style={{display:'block', marginTop:'50px', color:'var(--accent)', fontWeight:'bold', textDecoration:'none', border:'1px solid var(--accent)', padding:'15px', textAlign:'center', fontFamily:'Arial'}}>ORIGINALARTIKEL LESEN</a>
                             </div>
                         </div>
                     )}
@@ -212,17 +208,22 @@
 
                     {cat === "Home" ? (
                         <div className="cover-page">
-                            {homeItems[0] && (
+                            {homeItems[0] ? (
                                 <div className="lead-article">
                                     <span style={{fontSize:'0.7rem', fontWeight:'bold', color:'var(--accent)'}}>AKTUELL</span>
                                     <h2 onClick={() => setActiveArt(homeItems[0])}>{homeItems[0].title}</h2>
-                                    <p>{homeItems[0].desc.substring(0, 200)}...</p>
+                                    <p style={{maxWidth:'800px', margin:'10px auto', fontSize:'1.15rem'}}>{homeItems[0].desc.substring(0, 250)}...</p>
                                 </div>
-                            )}
+                            ) : <div className="lead-article"><h2>Lade Weltlage...</h2></div>}
                             <div className="content-grid">
                                 <div style={{textAlign:'left'}}>
-                                    <h4 style={{borderBottom:'1px solid black'}}>BIBLIOTHEK</h4>
-                                    {bookmarks.slice(0, 3).map((b, i) => <div key={i} onClick={() => setActiveArt(b)} style={{cursor:'pointer', fontWeight:'bold', marginBottom:'10px', fontSize:'0.9rem'}}>{b.title}</div>)}
+                                    <h4 style={{fontFamily:'Arial', borderBottom:'1px solid black', paddingBottom:'5px'}}>BIBLIOTHEK (Gemerkt)</h4>
+                                    {bookmarks.slice(0, 5).map((b, i) => (
+                                        <div key={i} onClick={() => setActiveArt(b)} style={{cursor:'pointer', fontWeight:'bold', marginBottom:'12px', fontSize:'0.95rem', borderBottom:'1px solid #eee', paddingBottom:'5px'}}>
+                                            {b.title}
+                                        </div>
+                                    ))}
+                                    {bookmarks.length === 0 && <p style={{fontSize:'0.9rem', color:'#888'}}>Markieren Sie Artikel mit 🔖.</p>}
                                 </div>
                                 <div className="quote-box">"{quote}"</div>
                             </div>
@@ -240,21 +241,22 @@
                                             }} className={`bookmark-btn ${bookmarks.find(b => b.id === it.id) ? 'active' : ''}`}>🔖</span>
                                         </div>
                                         <h3 onClick={() => setActiveArt(it)}>{it.title}</h3>
-                                        <p>{it.desc.substring(0, 180)}...</p>
+                                        <p>{it.desc.substring(0, 220)}...</p>
                                         {it.pers && it.pers.length > 0 && (
                                             <div className="cluster-box">
-                                                {it.pers.map((p, pi) => <div key={pi} onClick={() => setActiveArt(p)} style={{cursor:'pointer', marginBottom:'3px'}}><strong>{p.src}:</strong> {p.title}</div>)}
+                                                <span style={{fontSize:'0.65rem', fontWeight:'900', color:'var(--gold)', display:'block', marginBottom:'8px'}}>WEITERE PERSPEKTIVEN</span>
+                                                {it.pers.map((p, pi) => <div key={pi} onClick={() => setActiveArt(p)} style={{cursor:'pointer', marginBottom:'5px'}}><strong>{p.src}:</strong> {p.title}</div>)}
                                             </div>
                                         )}
                                     </div>
                                 ))}
                             </main>
                             <aside>
-                                <div style={{fontWeight:'bold', borderBottom:'2px solid black', marginBottom:'10px'}}>GEMERKT</div>
+                                <div style={{fontFamily:'Arial', fontWeight:'bold', borderBottom:'2px solid black', marginBottom:'15px', fontSize:'0.85rem'}}>BIBLIOTHEK</div>
                                 {bookmarks.map((b, i) => (
-                                    <div key={i} style={{fontSize:'0.85rem', marginBottom:'10px', borderBottom:'1px solid #eee'}}>
-                                        <span onClick={() => setActiveArt(b)} style={{cursor:'pointer', fontWeight:'bold'}}>{b.title}</span>
-                                        <div onClick={() => setBookmarks(bookmarks.filter(o => o.id !== b.id))} style={{color:'var(--accent)', cursor:'pointer', fontSize:'0.7rem'}}>[LÖSCHEN]</div>
+                                    <div key={i} style={{fontSize:'0.9rem', marginBottom:'15px', borderBottom:'1px solid #eee', paddingBottom:'10px'}}>
+                                        <span onClick={() => setActiveArt(b)} style={{cursor:'pointer', fontWeight:'bold', display:'block'}}>{b.title}</span>
+                                        <div onClick={() => setBookmarks(bookmarks.filter(o => o.id !== b.id))} style={{color:'var(--accent)', cursor:'pointer', fontSize:'0.7rem', marginTop:'5px'}}>[LÖSCHEN]</div>
                                     </div>
                                 ))}
                             </aside>
