@@ -4,9 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SOUVERÄN | Digitale Edition</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📰</text></svg>">
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://static.feednami.com/js/v1/feednami-client.js"></script>
     <style>
         :root { --paper: #fcfaf5; --ink: #1a1a1a; --border: #2f2f2f; --accent: #8b0000; }
         body { background-color: #dcdcdc; color: var(--ink); font-family: 'Georgia', serif; margin: 0; padding: 10px; }
@@ -33,16 +35,19 @@
 
         const RUBRIKEN = {
             "Politik": [
-                { name: "DLF", url: "https://www.deutschlandfunk.de/nachrichten-100.rss" },
-                { name: "Tagesschau", url: "https://www.tagesschau.de/newsticker.rss" }
+                "https://www.deutschlandfunk.de/nachrichten-100.rss",
+                "https://www.tagesschau.de/newsticker.rss"
             ],
             "Wirtschaft": [
-                { name: "Handelsblatt", url: "https://www.handelsblatt.com/contentexport/feed/topthemen/" },
-                { name: "WiWo", url: "https://www.wiwo.de/contentexport/feed/rss/schlagzeilen" }
+                "https://www.handelsblatt.com/contentexport/feed/topthemen/",
+                "https://www.wiwo.de/contentexport/feed/rss/schlagzeilen"
             ],
             "Technik": [
-                { name: "Heise", url: "https://www.heise.de/rss/heise-atom.xml" },
-                { name: "Golem", url: "https://www.golem.de/rss.php?feed=RSS2.0" }
+                "https://www.heise.de/rss/heise-atom.xml",
+                "https://www.golem.de/rss.php?feed=RSS2.0"
+            ],
+            "Wissenschaft": [
+                "https://www.spektrum.de/alias/rss/spektrum-der-wissenschaft-news/982911"
             ]
         };
 
@@ -54,26 +59,28 @@
             const fetchNews = async (key) => {
                 setLoading(true);
                 let all = [];
-                for (const feed of RUBRIKEN[key]) {
+                const urls = RUBRIKEN[key];
+                
+                for (const url of urls) {
                     try {
-                        // Wir nutzen einen extrem simplen Proxy, der nur den Header korrigiert
-                        const proxyUrl = "https://api.allorigins.win/get?url=" + encodeURIComponent(feed.url);
-                        const res = await fetch(proxyUrl);
-                        const data = await res.json();
-                        
-                        const parser = new DOMParser();
-                        const xmlDoc = parser.parseFromString(data.contents, "text/xml");
-                        const items = xmlDoc.querySelectorAll("item");
-                        
-                        const parsed = Array.from(items).map(item => ({
-                            title: item.querySelector("title")?.textContent || "",
-                            link: item.querySelector("link")?.textContent || "",
-                            description: item.querySelector("description")?.textContent?.replace(/<[^>]*>?/gm, '') || "",
-                            source: feed.name,
-                            ts: new Date(item.querySelector("pubDate")?.textContent).getTime() || Date.now()
+                        // Feednami nutzt einen eigenen Proxy und Parser
+                        const response = await feednami.load(url);
+                        const sourceName = url.includes("tagesschau") ? "Tagesschau" : 
+                                         url.includes("deutschlandfunk") ? "DLF" : 
+                                         url.includes("handelsblatt") ? "Handelsblatt" : 
+                                         url.includes("wiwo") ? "WiWo" : 
+                                         url.includes("heise") ? "Heise" : 
+                                         url.includes("golem") ? "Golem" : "Spektrum";
+
+                        const items = response.entries.map(entry => ({
+                            title: entry.title,
+                            link: entry.link,
+                            description: entry.description || entry.summary || "",
+                            source: sourceName,
+                            ts: new Date(entry.pubdate || entry.date).getTime() || Date.now()
                         }));
-                        all = [...all, ...parsed];
-                    } catch (e) { console.error("Fehler bei:", feed.name); }
+                        all = [...all, ...items];
+                    } catch (e) { console.error("Fehler bei:", url); }
                 }
                 setArticles(all.sort((a, b) => b.ts - a.ts));
                 setLoading(false);
@@ -87,6 +94,7 @@
                         <h1 className="masthead">Souverän</h1>
                         <div className="sub-header">
                             <span>10. MÄRZ 2026</span>
+                            <span>STUTTGART • 11°C</span>
                             <span>NR. 01 / QUALITÄTSJOURNALISMUS</span>
                         </div>
                     </header>
@@ -101,7 +109,7 @@
                             <article key={i} className="main-article">
                                 <span className="article-source">{a.source}</span>
                                 <h3><a href={a.link} target="_blank" rel="noreferrer">{a.title}</a></h3>
-                                <p>{a.description.substring(0, 200)}...</p>
+                                <p>{a.description.replace(/<[^>]*>?/gm, '').substring(0, 200)}...</p>
                                 <span style={{fontSize: '0.7rem', color: '#777'}}>{new Date(a.ts).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} Uhr</span>
                             </article>
                         ))}
