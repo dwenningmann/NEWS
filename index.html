@@ -8,24 +8,23 @@
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <script src="https://static.feednami.com/js/v1/feednami-client.js"></script>
     <style>
         :root { --paper: #fcfaf5; --ink: #1a1a1a; --border: #2f2f2f; --accent: #8b0000; }
-        body { background-color: #dcdcdc; color: var(--ink); font-family: 'Georgia', serif; margin: 0; padding: 10px; }
-        .page { max-width: 950px; margin: 0 auto; background-color: var(--paper); box-shadow: 0 0 30px rgba(0,0,0,0.2); padding: 5%; border: 1px solid #ccc; min-height: 100vh; }
-        header { text-align: center; border-bottom: 4px double var(--border); margin-bottom: 30px; }
-        .masthead { font-size: clamp(2.2rem, 8vw, 4.5rem); font-weight: 900; letter-spacing: -2px; text-transform: uppercase; margin: 0; line-height: 0.9; }
-        .sub-header { display: flex; justify-content: space-between; padding: 10px 5px; font-family: 'Arial', sans-serif; font-size: clamp(0.6rem, 2vw, 0.75rem); font-weight: bold; border-top: 1px solid var(--border); margin-top: 10px; flex-wrap: wrap; gap: 10px; }
-        nav { display: flex; justify-content: center; gap: 10px; border-bottom: 1px solid var(--border); padding: 10px 0; margin-bottom: 30px; flex-wrap: wrap; }
-        nav button { background: none; border: none; font-family: 'Arial', sans-serif; text-transform: uppercase; font-size: 0.75rem; cursor: pointer; color: var(--ink); font-weight: bold; padding: 5px; opacity: 0.5; }
+        body { background-color: #dcdcdc; color: var(--ink); font-family: 'Georgia', serif; margin: 0; padding: 10px; line-height: 1.4; }
+        .page { max-width: 900px; margin: 0 auto; background-color: var(--paper); box-shadow: 0 0 30px rgba(0,0,0,0.2); padding: 40px 20px; border: 1px solid #ccc; min-height: 100vh; }
+        header { text-align: center; border-bottom: 4px double var(--border); margin-bottom: 25px; }
+        .masthead { font-size: clamp(2rem, 8vw, 4rem); font-weight: 900; letter-spacing: -2px; text-transform: uppercase; margin: 0; }
+        .sub-header { display: flex; justify-content: space-between; padding: 8px 0; font-family: Arial; font-size: 0.7rem; font-weight: bold; border-top: 1px solid var(--border); margin-top: 5px; }
+        nav { display: flex; justify-content: center; gap: 10px; border-bottom: 1px solid var(--border); padding-bottom: 10px; margin-bottom: 25px; flex-wrap: wrap; }
+        nav button { background: none; border: none; font-family: Arial; text-transform: uppercase; font-size: 0.75rem; cursor: pointer; font-weight: bold; opacity: 0.5; padding: 5px 10px; }
         nav button.active { opacity: 1; border-bottom: 2px solid var(--accent); }
-        .main-article { border-bottom: 1px solid #ddd; padding-bottom: 25px; margin-bottom: 25px; }
-        .article-source { font-family: 'Arial', sans-serif; font-size: 0.7rem; text-transform: uppercase; color: var(--accent); font-weight: bold; display: block; margin-bottom: 5px; }
-        .main-article h3 { font-size: 1.5rem; margin: 0 0 10px 0; line-height: 1.1; }
-        .main-article h3 a { color: var(--ink); text-decoration: none; }
-        .main-article p { font-size: 1rem; line-height: 1.5; color: #333; margin: 10px 0; }
+        .article { border-bottom: 1px solid #ddd; padding-bottom: 20px; margin-bottom: 20px; }
+        .article-source { font-family: Arial; font-size: 0.65rem; text-transform: uppercase; color: var(--accent); font-weight: bold; }
+        .article h3 { font-size: 1.4rem; margin: 5px 0; line-height: 1.2; }
+        .article h3 a { color: var(--ink); text-decoration: none; }
+        .article p { font-size: 1rem; color: #333; margin: 8px 0; }
         .loading-bar { height: 2px; background: var(--accent); width: 100%; animation: load 1.5s infinite; margin-bottom: 20px;}
-        @keyframes load { 0% { opacity: 0.1; } 50% { opacity: 1; } 100% { opacity: 0.1; } }
+        @keyframes load { 0%, 100% { opacity: 0.2; } 50% { opacity: 1; } }
     </style>
 </head>
 <body>
@@ -33,60 +32,55 @@
     <script type="text/babel">
         const { useState, useEffect } = React;
 
-        const RUBRIKEN = {
+        const FEEDS = {
             "Politik": [
-                "https://www.deutschlandfunk.de/nachrichten-100.rss",
-                "https://www.tagesschau.de/newsticker.rss"
+                { n: "DLF", u: "https://www.deutschlandfunk.de/nachrichten-100.rss" },
+                { n: "Tagesschau", u: "https://www.tagesschau.de/newsticker.rss" }
             ],
             "Wirtschaft": [
-                "https://www.handelsblatt.com/contentexport/feed/topthemen/",
-                "https://www.wiwo.de/contentexport/feed/rss/schlagzeilen"
+                { n: "Handelsblatt", u: "https://www.handelsblatt.com/contentexport/feed/topthemen/" },
+                { n: "WiWo", u: "https://www.wiwo.de/contentexport/feed/rss/schlagzeilen" }
             ],
             "Technik": [
-                "https://www.heise.de/rss/heise-atom.xml",
-                "https://www.golem.de/rss.php?feed=RSS2.0"
-            ],
-            "Wissenschaft": [
-                "https://www.spektrum.de/alias/rss/spektrum-der-wissenschaft-news/982911"
+                { n: "Heise", u: "https://www.heise.de/rss/heise-atom.xml" },
+                { n: "Golem", u: "https://www.golem.de/rss.php?feed=RSS2.0" }
             ]
         };
 
         function App() {
-            const [rubrik, setRubrik] = useState("Politik");
-            const [articles, setArticles] = useState([]);
+            const [cat, setCat] = useState("Politik");
+            const [items, setItems] = useState([]);
             const [loading, setLoading] = useState(false);
 
-            const fetchNews = async (key) => {
+            const loadNews = async (category) => {
                 setLoading(true);
                 let all = [];
-                const urls = RUBRIKEN[key];
-                
-                for (const url of urls) {
+                for (const feed of FEEDS[category]) {
                     try {
-                        // Feednami nutzt einen eigenen Proxy und Parser
-                        const response = await feednami.load(url);
-                        const sourceName = url.includes("tagesschau") ? "Tagesschau" : 
-                                         url.includes("deutschlandfunk") ? "DLF" : 
-                                         url.includes("handelsblatt") ? "Handelsblatt" : 
-                                         url.includes("wiwo") ? "WiWo" : 
-                                         url.includes("heise") ? "Heise" : 
-                                         url.includes("golem") ? "Golem" : "Spektrum";
+                        // Google Script Apps Proxy - extrem stabil & umgeht CORS
+                        const proxy = "https://script.google.com/macros/s/AKfycbzGv9wg_LCEpY6SBlx789n_vT40YID_8u9E076uI8Y7UToT9K9k/exec?url=";
+                        const res = await fetch(proxy + encodeURIComponent(feed.u));
+                        const xmlText = await res.text();
+                        
+                        const parser = new DOMParser();
+                        const doc = parser.parseFromString(xmlText, "text/xml");
+                        const entries = Array.from(doc.querySelectorAll("item, entry"));
 
-                        const items = response.entries.map(entry => ({
-                            title: entry.title,
-                            link: entry.link,
-                            description: entry.description || entry.summary || "",
-                            source: sourceName,
-                            ts: new Date(entry.pubdate || entry.date).getTime() || Date.now()
+                        const parsed = entries.map(e => ({
+                            title: e.querySelector("title")?.textContent || "",
+                            link: e.querySelector("link")?.textContent || e.querySelector("link")?.getAttribute("href") || "#",
+                            desc: (e.querySelector("description")?.textContent || e.querySelector("summary")?.textContent || "").replace(/<[^>]*>?/gm, '').substring(0, 180),
+                            src: feed.n,
+                            date: new Date(e.querySelector("pubDate, published, updated")?.textContent).getTime() || Date.now()
                         }));
-                        all = [...all, ...items];
-                    } catch (e) { console.error("Fehler bei:", url); }
+                        all = [...all, ...parsed];
+                    } catch (err) { console.error("Fehler:", feed.n); }
                 }
-                setArticles(all.sort((a, b) => b.ts - a.ts));
+                setItems(all.sort((a, b) => b.date - a.date));
                 setLoading(false);
             };
 
-            useEffect(() => { fetchNews(rubrik); }, [rubrik]);
+            useEffect(() => { loadNews(cat); }, [cat]);
 
             return (
                 <div className="page">
@@ -94,24 +88,24 @@
                         <h1 className="masthead">Souverän</h1>
                         <div className="sub-header">
                             <span>10. MÄRZ 2026</span>
-                            <span>STUTTGART • 11°C</span>
+                            <span>STUTTGART • 10°C</span>
                             <span>NR. 01 / QUALITÄTSJOURNALISMUS</span>
                         </div>
                     </header>
                     <nav>
-                        {Object.keys(RUBRIKEN).map(r => (
-                            <button key={r} className={rubrik === r ? "active" : ""} onClick={() => setRubrik(r)}>{r}</button>
+                        {Object.keys(FEEDS).map(c => (
+                            <button key={c} className={cat === c ? "active" : ""} onClick={() => setCat(c)}>{c}</button>
                         ))}
                     </nav>
                     {loading && <div className="loading-bar"></div>}
                     <main>
-                        {articles.map((a, i) => (
-                            <article key={i} className="main-article">
-                                <span className="article-source">{a.source}</span>
-                                <h3><a href={a.link} target="_blank" rel="noreferrer">{a.title}</a></h3>
-                                <p>{a.description.replace(/<[^>]*>?/gm, '').substring(0, 200)}...</p>
-                                <span style={{fontSize: '0.7rem', color: '#777'}}>{new Date(a.ts).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} Uhr</span>
-                            </article>
+                        {items.map((it, i) => (
+                            <div key={i} className="article">
+                                <span className="article-source">{it.src}</span>
+                                <h3><a href={it.link} target="_blank">{it.title}</a></h3>
+                                <p>{it.desc}...</p>
+                                <small style={{color: '#777'}}>{new Date(it.date).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})} Uhr</small>
+                            </div>
                         ))}
                     </main>
                 </div>
