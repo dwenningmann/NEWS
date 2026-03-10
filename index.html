@@ -14,12 +14,12 @@
         .page { max-width: 1000px; margin: 0 auto; background-color: var(--paper); box-shadow: 0 0 30px rgba(0,0,0,0.2); padding: 40px 20px; border: 1px solid #ccc; min-height: 100vh; }
         
         /* Ticker */
-        .ticker-wrap { background: var(--ink); color: white; padding: 6px 0; overflow: hidden; font-family: Arial, sans-serif; font-size: 0.75rem; text-transform: uppercase; margin: -40px -20px 30px -20px; border-bottom: 2px solid var(--accent); }
-        .ticker { display: flex; white-space: nowrap; animation: ticker 40s linear infinite; }
+        .ticker-wrap { background: var(--ink); color: white; padding: 6px 0; overflow: hidden; font-family: Arial, sans-serif; font-size: 0.75rem; text-transform: uppercase; margin: -40px -20px 30px -20px; border-bottom: 2px solid var(--accent); position: sticky; top: 0; z-index: 100; }
+        .ticker { display: flex; white-space: nowrap; animation: ticker 60s linear infinite; width: fit-content; }
         .ticker span { padding: 0 30px; font-weight: bold; }
         @keyframes ticker { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
 
-        header { text-align: center; border-bottom: 4px double var(--border); margin-bottom: 25px; }
+        header { text-align: center; border-bottom: 4px double var(--border); margin-bottom: 25px; padding-top: 10px; }
         .masthead { font-size: clamp(2.5rem, 10vw, 4.5rem); font-weight: 900; letter-spacing: -2px; text-transform: uppercase; margin: 0; }
         .sub-header { display: flex; justify-content: space-between; padding: 8px 0; font-family: Arial; font-size: 0.7rem; font-weight: bold; border-top: 1px solid var(--border); margin-top: 5px; }
         
@@ -32,7 +32,7 @@
 
         .article { border-bottom: 1px solid #ddd; padding-bottom: 25px; margin-bottom: 25px; }
         .article-source { font-family: Arial; font-size: 0.65rem; text-transform: uppercase; color: var(--accent); font-weight: bold; margin-bottom: 5px; display: block; }
-        .article h3 { font-size: 1.6rem; margin: 5px 0 12px 0; line-height: 1.1; }
+        .article h3 { font-size: 1.6rem; margin: 5px 0 12px 0; line-height: 1.1; font-weight: bold; }
         .article h3 a { color: var(--ink); text-decoration: none; }
         .article p { font-size: 1.05rem; color: #333; margin: 10px 0; }
         
@@ -68,10 +68,20 @@
             ]
         };
 
-        const decodeHTMLEntities = (text) => {
-            const textArea = document.createElement('textarea');
-            textArea.innerHTML = text;
-            return textArea.value;
+        // Komplexe Korrektur für Umlaute (UTF-8 / ISO Mischmasch)
+        const fixEncoding = (text) => {
+            if (!text) return "";
+            try {
+                // Versuche HTML Entities zu dekodieren
+                const doc = new DOMParser().parseFromString(text, 'text/html');
+                let decoded = doc.documentElement.textContent;
+                
+                // Manuelle Korrektur für häufige Fehl-Kodierungen (ISO-8859-1 zu UTF-8)
+                return decoded
+                    .replace(/Ã¤/g, 'ä').replace(/Ã¶/g, 'ö').replace(/Ã¼/g, 'ü')
+                    .replace(/Ã„/g, 'Ä').replace(/Ã–/g, 'Ö').replace(/Ãœ/g, 'Ü')
+                    .replace(/ÃŸ/g, 'ß').replace(/Â/g, '').replace(/â€“/g, '–');
+            } catch (e) { return text; }
         };
 
         function App() {
@@ -86,14 +96,19 @@
                     try {
                         const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(feed.u)}`;
                         const res = await fetch(proxyUrl);
-                        const xmlText = await res.text();
+                        const buffer = await res.arrayBuffer();
+                        
+                        // Versuche Text als UTF-8 zu lesen
+                        const decoder = new TextDecoder('utf-8');
+                        const xmlText = decoder.decode(buffer);
+                        
                         const doc = new DOMParser().parseFromString(xmlText, "text/xml");
                         const entries = Array.from(doc.querySelectorAll("item, entry"));
 
                         const parsed = entries.map(e => ({
-                            title: decodeHTMLEntities(e.querySelector("title")?.textContent || ""),
+                            title: fixEncoding(e.querySelector("title")?.textContent || ""),
                             link: e.querySelector("link")?.textContent || e.querySelector("link")?.getAttribute("href") || "#",
-                            desc: decodeHTMLEntities(e.querySelector("description")?.textContent || e.querySelector("summary")?.textContent || "").replace(/<[^>]*>?/gm, '').substring(0, 200),
+                            desc: fixEncoding(e.querySelector("description")?.textContent || e.querySelector("summary")?.textContent || "").replace(/<[^>]*>?/gm, '').substring(0, 200),
                             src: feed.n,
                             date: new Date(e.querySelector("pubDate, published, updated")?.textContent).getTime() || Date.now()
                         }));
@@ -110,16 +125,16 @@
                 <div className="page">
                     <div className="ticker-wrap">
                         <div className="ticker">
-                            {items.concat(items).slice(0, 20).map((it, i) => (
+                            {items.length > 0 ? items.concat(items).map((it, i) => (
                                 <span key={i}>+++ {it.title} +++</span>
-                            ))}
+                            )) : <span>Lade aktuelle Meldungen...</span>}
                         </div>
                     </div>
 
                     <header>
                         <h1 className="masthead">Souverän</h1>
                         <div className="sub-header">
-                            <span>DIENSTAG, 10. MÄRZ 2026</span>
+                            <span>10. MÄRZ 2026</span>
                             <span>STUTTGART • 11°C</span>
                             <span>NR. 01 / DIGITALE AUSGABE</span>
                         </div>
