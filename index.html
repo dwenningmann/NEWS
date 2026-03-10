@@ -3,39 +3,84 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SOUVERÄN | Digitale Edition</title>
+    <title>SOUVERÄN | Premium Edition</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📰</text></svg>">
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <style>
         :root { --paper: #fcfaf5; --ink: #1a1a1a; --border: #2f2f2f; --accent: #8b0000; --dim: #666; --gold: #b8860b; --opinion: #f4f1ea; }
+
+        /* Papier-Textur */
+        body::before {
+            content: ""; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            opacity: 0.04; pointer-events: none; z-index: 9999;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+        }
+
         body { background-color: #dcdcdc; color: var(--ink); font-family: 'Georgia', serif; margin: 0; padding: 0; }
-        .page { max-width: 1100px; margin: 20px auto; background-color: var(--paper); box-shadow: 0 0 50px rgba(0,0,0,0.2); padding: 5%; border: 1px solid #aaa; min-height: 100vh; }
-        header { text-align: center; border-bottom: 3px double var(--border); margin-bottom: 25px; }
+        .page { max-width: 1100px; margin: 20px auto; background-color: var(--paper); box-shadow: 0 0 50px rgba(0,0,0,0.2); padding: 5%; border: 1px solid #aaa; min-height: 100vh; position: relative; }
+
+        header { text-align: center; border-bottom: 3px double var(--border); margin-bottom: 25px; padding-bottom: 10px; position: relative; }
+        
+        /* Widmung im Header */
+        .dedication { 
+            position: absolute; 
+            top: 0; 
+            right: 0; 
+            font-family: Arial, sans-serif; 
+            font-size: 0.9rem; 
+            color: var(--gold); 
+            font-weight: bold;
+            opacity: 0.7;
+        }
+
         .masthead { font-size: clamp(2rem, 8vw, 3.5rem); font-weight: 900; letter-spacing: -1px; text-transform: uppercase; margin: 0; line-height: 1; }
-        .meta-line { font-family: Arial, sans-serif; font-weight: bold; border-top: 1px solid black; margin-top: 10px; display: flex; justify-content: space-between; padding: 8px 0; font-size: clamp(0.6rem, 2vw, 0.75rem); text-transform: uppercase; }
+        .slogan { font-family: Arial, sans-serif; font-size: 0.7rem; letter-spacing: 2px; text-transform: uppercase; color: var(--dim); margin-top: 5px; font-weight: bold; }
+
+        .meta-line { font-family: Arial, sans-serif; font-weight: bold; border-top: 1px solid black; margin-top: 15px; display: flex; justify-content: space-between; padding: 8px 0; font-size: clamp(0.6rem, 2vw, 0.75rem); text-transform: uppercase; align-items: center; }
+
         nav { display: flex; justify-content: center; gap: 15px; border-bottom: 1px solid var(--border); padding-bottom: 10px; margin-bottom: 30px; flex-wrap: wrap; }
-        nav button { background: none; border: none; font-family: Arial, sans-serif; text-transform: uppercase; font-size: 0.75rem; cursor: pointer; font-weight: bold; opacity: 0.5; padding: 5px; }
+        nav button { background: none; border: none; font-family: Arial; text-transform: uppercase; font-size: 0.75rem; cursor: pointer; font-weight: bold; opacity: 0.5; padding: 5px; }
         nav button.active { opacity: 1; color: var(--accent); border-bottom: 2px solid var(--accent); }
+
         .content-grid { display: grid; grid-template-columns: 2.2fr 1fr; gap: 40px; }
         @media (max-width: 850px) { .content-grid { grid-template-columns: 1fr; } .page { margin: 0; border: none; padding: 20px; } }
-        .article { border-bottom: 1px solid #ccc; padding-bottom: 25px; margin-bottom: 25px; position: relative; }
-        .article.is-opinion { background-color: var(--opinion); padding: 20px; border: 1px solid #ddd; border-left: 5px solid var(--accent); }
-        .article-source { font-family: Arial, sans-serif; font-size: 0.65rem; color: var(--accent); font-weight: 900; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
-        .bookmark-btn { cursor: pointer; font-size: 1.1rem; filter: grayscale(1); opacity: 0.4; }
-        .bookmark-btn.active { filter: grayscale(0); opacity: 1; }
-        .article h3 { font-size: 1.6rem; margin: 0 0 12px 0; line-height: 1.1; }
-        .article h3 a { color: var(--ink); text-decoration: none; }
-        .article p { font-size: 1.05rem; line-height: 1.4; color: #222; margin: 0; text-align: justify; }
+
+        .article { border-bottom: 1px solid #ccc; padding-bottom: 25px; margin-bottom: 25px; }
+        .article h3 { font-size: 1.6rem; margin: 0 0 12px 0; line-height: 1.1; cursor: pointer; }
+        .article-source { font-family: Arial; font-size: 0.65rem; color: var(--accent); font-weight: 900; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+
+        /* DEEP READER: BILDER- & BLOCK-FIX */
+        .reader-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 1000; display: flex; justify-content: center; overflow-y: auto; }
+        .reader-content { background: var(--paper); max-width: 850px; width: 100%; min-height: 100vh; padding: 40px 10%; position: relative; box-shadow: 0 0 100px black; }
+        
+        .progress-bar { position: fixed; top: 0; left: 0; height: 5px; background: var(--gold); z-index: 1001; }
+
+        .reader-controls { position: sticky; top: 0; background: var(--paper); padding: 15px 0; border-bottom: 1px solid #ddd; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center; z-index: 10; }
+        
+        .reader-body { line-height: 1.8; text-align: justify; }
+        
+        /* UNTERBINDET TEXTUMFLUSS RADIKAL */
+        .reader-body img, .reader-body figure, .reader-body .image-container { 
+            max-width: 100% !important; 
+            max-height: 65vh !important;
+            width: auto !important;
+            height: auto !important;
+            object-fit: contain !important;
+            display: block !important; 
+            float: none !important; 
+            clear: both !important; 
+            margin: 35px auto !important; 
+            border: 1px solid #ddd; padding: 5px; background: #fff;
+        }
+
         .cluster-box { background: #f0ede6; padding: 12px; margin-top: 15px; border-left: 4px solid var(--gold); font-size: 0.85rem; }
-        .cluster-tag { font-family: Arial; font-weight: bold; color: var(--gold); font-size: 0.6rem; text-transform: uppercase; display: block; margin-bottom: 5px; }
-        .sidebar-title { font-family: Arial, sans-serif; font-weight: 900; text-transform: uppercase; border-bottom: 2px solid var(--ink); padding-bottom: 5px; margin-bottom: 15px; font-size: 0.85rem; }
         .loading-bar { height: 3px; background: var(--accent); width: 100%; animation: load 2s infinite; margin-bottom: 30px;}
         @keyframes load { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
-        .sidebar-item { font-size: 0.9rem; margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid #eee; }
-        .sidebar-item a { text-decoration: none; color: inherit; font-weight: bold; line-height: 1.2; display: block; }
-        .weather-box { color: var(--accent); }
+
+        .bookmark-btn { cursor: pointer; font-size: 1.1rem; filter: grayscale(1); opacity: 0.4; }
+        .bookmark-btn.active { filter: grayscale(0); opacity: 1; }
     </style>
 </head>
 <body>
@@ -44,79 +89,67 @@
         const { useState, useEffect, useMemo } = React;
 
         const FEEDS = {
-            "Politik": [
-                { n: "DLF", u: "https://www.deutschlandfunk.de/nachrichten-100.rss" },
-                { n: "Tagesschau", u: "https://www.tagesschau.de/newsticker.rss" }
-            ],
-            "Wirtschaft": [
-                { n: "Handelsblatt", u: "https://www.handelsblatt.com/contentexport/feed/topthemen/" },
-                { n: "WiWo", u: "https://www.wiwo.de/contentexport/feed/rss/schlagzeilen" }
-            ],
-            "Debatte": [
-                { n: "Eurotopics", u: "https://www.eurotopics.net/de/home/rss/" },
-                { n: "NZZ Meinung", u: "https://www.nzz.ch/meinung.rss" },
-                { n: "Cicero", u: "https://www.cicero.de/rss.xml" }
-            ],
-            "Technik": [
-                { n: "Heise", u: "https://www.heise.de/rss/heise-atom.xml" },
-                { n: "Golem", u: "https://www.golem.de/rss.php?feed=RSS2.0" }
-            ]
+            "Politik": [{ n: "DLF", u: "https://www.deutschlandfunk.de/nachrichten-100.rss" }, { n: "Tagesschau", u: "https://www.tagesschau.de/newsticker.rss" }],
+            "Wirtschaft": [{ n: "Handelsblatt", u: "https://www.handelsblatt.com/contentexport/feed/topthemen/" }, { n: "WiWo", u: "https://www.wiwo.de/contentexport/feed/rss/schlagzeilen" }],
+            "Debatte": [{ n: "Eurotopics", u: "https://www.eurotopics.net/de/home/rss/" }, { n: "NZZ Meinung", u: "https://www.nzz.ch/meinung.rss" }],
+            "Sport": [{ n: "Kicker", u: "https://newsfeed.kicker.de/news/aktuell" }, { n: "Sportschau", u: "https://www.sportschau.de/index~rss2.xml" }],
+            "Technik": [{ n: "Heise", u: "https://www.heise.de/rss/heise-atom.xml" }, { n: "Golem", u: "https://www.golem.de/rss.php?feed=RSS2.0" }]
         };
 
-        const safeDecode = (buffer) => {
-            const utf8Decoder = new TextDecoder('utf-8');
-            const isoDecoder = new TextDecoder('iso-8859-1');
-            const decodedUtf8 = utf8Decoder.decode(buffer);
-            if (decodedUtf8.includes('Ã') || decodedUtf8.includes('\uFFFD')) {
-                return isoDecoder.decode(buffer);
-            }
-            return decodedUtf8;
+        const safeDecode = (buf) => {
+            const u8 = new Uint8Array(buf);
+            const utf8 = new TextDecoder('utf-8').decode(u8);
+            return (utf8.includes('Ã') || utf8.includes('\uFFFD')) ? new TextDecoder('iso-8859-1').decode(u8) : utf8;
         };
 
-        const cleanText = (t) => {
-            if (!t) return "";
-            const d = new DOMParser().parseFromString(t, 'text/html');
-            return d.documentElement.textContent.trim();
+        const getWeatherIcon = (code) => {
+            if (code === 0) return "☀️";
+            if (code <= 3) return "☁️";
+            if (code <= 67) return "🌧️";
+            if (code <= 77) return "❄️";
+            if (code <= 82) return "🌦️";
+            return "🌩️";
         };
 
         function App() {
             const [cat, setCat] = useState("Politik");
-            const [rawItems, setRawItems] = useState([]);
+            const [items, setItems] = useState([]);
             const [bookmarks, setBookmarks] = useState(JSON.parse(localStorage.getItem('bookmarks') || '[]'));
             const [loading, setLoading] = useState(false);
-            const [weather, setWeather] = useState("LÄDT...");
+            const [weather, setWeather] = useState({ temp: "...", icon: "" });
+            const [activeArt, setActiveArt] = useState(null);
+            const [fontSize, setFontSize] = useState(1.15);
+            const [progress, setProgress] = useState(0);
 
             useEffect(() => { localStorage.setItem('bookmarks', JSON.stringify(bookmarks)); }, [bookmarks]);
 
-            // Wetter Stuttgart
             useEffect(() => {
                 fetch("https://api.open-meteo.com/v1/forecast?latitude=48.78&longitude=9.18&current_weather=true")
-                    .then(res => res.json())
-                    .then(data => {
-                        const temp = Math.round(data.current_weather.temperature);
-                        setWeather(`${temp}°C STUTTGART`);
-                    })
-                    .catch(() => setWeather("STUTTGART"));
+                    .then(r => r.json()).then(d => {
+                        setWeather({ 
+                            temp: `${Math.round(d.current_weather.temperature)}°C`, 
+                            icon: getWeatherIcon(d.current_weather.weathercode) 
+                        });
+                    }).catch(() => setWeather({ temp: "STUTTGART", icon: "📍" }));
             }, []);
 
-            const loadNews = async (c) => {
+            const load = async (c) => {
                 setLoading(true);
                 let all = [];
                 for (const f of FEEDS[c]) {
                     try {
                         const res = await fetch(`https://corsproxy.io/?${encodeURIComponent(f.u)}`);
-                        const buffer = await res.arrayBuffer();
-                        const xml = safeDecode(new Uint8Array(buffer));
-                        const doc = new DOMParser().parseFromString(xml, "text/xml");
+                        const buf = await res.arrayBuffer();
+                        const doc = new DOMParser().parseFromString(safeDecode(buf), "text/xml");
                         const entries = Array.from(doc.querySelectorAll("item, entry"));
                         all = [...all, ...entries.map(e => ({
                             id: e.querySelector("link")?.textContent || Math.random().toString(),
-                            title: cleanText(e.querySelector("title")?.textContent || ""),
+                            title: (e.querySelector("title")?.textContent || "").trim(),
                             link: e.querySelector("link")?.textContent || e.querySelector("link")?.getAttribute("href") || "#",
-                            desc: cleanText(e.querySelector("description, summary")?.textContent || "").replace(/<[^>]*>?/gm, '').substring(0, 250),
+                            desc: (e.querySelector("description, summary")?.textContent || "").replace(/<[^>]*>?/gm, ''),
+                            full: e.querySelector("content\\:encoded, description")?.textContent || "",
                             src: f.n,
-                            date: new Date(e.querySelector("pubDate, published, updated")?.textContent).getTime() || Date.now(),
-                            isOpinion: c === "Debatte"
+                            date: new Date(e.querySelector("pubDate, published, updated")?.textContent).getTime() || Date.now()
                         }))];
                     } catch (e) { console.error(e); }
                 }
@@ -124,76 +157,96 @@
                 setLoading(false);
             };
 
-            useEffect(() => { loadNews(cat); }, [cat]);
+            const setRawItems = (val) => setItems(val);
 
-            const clusteredItems = useMemo(() => {
-                let processed = [];
-                let skipIds = new Set();
-                rawItems.forEach(item => {
-                    if (skipIds.has(item.id)) return;
-                    const keywords = item.title.toLowerCase().split(/\W+/).filter(w => w.length > 5);
-                    const perspectives = rawItems.filter(other => {
-                        if (other.id === item.id) return false;
-                        return keywords.some(k => other.title.toLowerCase().includes(k));
-                    });
-                    perspectives.forEach(p => skipIds.add(p.id));
-                    processed.push({ ...item, perspectives });
+            useEffect(() => { load(cat); }, [cat]);
+
+            const clustered = useMemo(() => {
+                let processed = []; let skip = new Set();
+                items.forEach(it => {
+                    if (skip.has(it.id)) return;
+                    const keys = it.title.toLowerCase().split(/\W+/).filter(w => w.length > 5);
+                    const pers = items.filter(o => o.id !== it.id && keys.some(k => o.title.toLowerCase().includes(k)));
+                    pers.forEach(p => skip.add(p.id));
+                    processed.push({ ...it, pers });
                 });
                 return processed;
-            }, [rawItems]);
-
-            const toggleBookmark = (it) => {
-                if (bookmarks.find(b => b.id === it.id)) setBookmarks(bookmarks.filter(b => b.id !== it.id));
-                else setBookmarks([it, ...bookmarks]);
-            };
+            }, [items]);
 
             return (
                 <div className="page">
+                    {activeArt && (
+                        <div className="reader-overlay" onScroll={e => {
+                            const h = e.target.scrollHeight - e.target.clientHeight;
+                            setProgress((e.target.scrollTop / h) * 100);
+                        }}>
+                            <div className="progress-bar" style={{width: `${progress}%`}}></div>
+                            <div className="reader-content">
+                                <div className="reader-controls">
+                                    <button onClick={() => {setActiveArt(null); setProgress(0);}} style={{cursor:'pointer', border:'none', background:'none', fontWeight:'bold', fontFamily:'Arial'}}>← ZURÜCK</button>
+                                    <div style={{display:'flex', gap:'10px'}}>
+                                        <button onClick={() => setFontSize(f => Math.max(0.8, f - 0.1))} style={{padding:'5px 10px', cursor:'pointer'}}>A-</button>
+                                        <button onClick={() => setFontSize(f => Math.min(1.8, f + 0.1))} style={{padding:'5px 10px', cursor:'pointer'}}>A+</button>
+                                    </div>
+                                </div>
+                                <span style={{fontFamily:'Arial', fontSize:'0.7rem', color:'var(--accent)', fontWeight:'900', display:'block', marginBottom:'10px'}}>{activeArt.src}</span>
+                                <h2 style={{fontSize:'2.4rem', margin:'0 0 25px 0', lineHeight:1.1}}>{activeArt.title}</h2>
+                                <div className="reader-body" style={{fontSize: `${fontSize}rem`}} dangerouslySetInnerHTML={{ __html: activeArt.full || activeArt.desc }}></div>
+                                <a href={activeArt.link} target="_blank" rel="noreferrer" style={{display:'block', textAlign:'center', marginTop:'40px', color:'var(--accent)', fontWeight:'bold', textDecoration:'none', border:'1px solid var(--accent)', padding:'12px', fontFamily:'Arial', fontSize:'0.8rem'}}>ORIGINALARTIKEL AUF {activeArt.src} ÖFFNEN</a>
+                            </div>
+                        </div>
+                    )}
+
                     <header>
+                        <div className="dedication">A ❤️</div>
                         <h1 className="masthead">Souverän</h1>
+                        <div className="slogan">Nachrichten ohne Lärm</div>
                         <div className="meta-line">
                             <span>10. MÄRZ 2026</span>
-                            <span className="weather-box">{weather}</span>
-                            <span>NR. 124</span>
+                            <span style={{color:'var(--gold)', display:'flex', alignItems:'center'}}>
+                                <span style={{fontSize:'1.2rem', marginRight:'5px'}}>{weather.icon}</span>
+                                {weather.temp} STUTTGART
+                            </span>
+                            <span>NR. 124 | PREMIUM</span>
                         </div>
                     </header>
+
                     <nav>
                         {Object.keys(FEEDS).map(c => (
                             <button key={c} className={cat === c ? "active" : ""} onClick={() => setCat(c)}>{c}</button>
                         ))}
                     </nav>
+
                     {loading && <div className="loading-bar"></div>}
+
                     <div className="content-grid">
                         <main>
-                            {clusteredItems.slice(0, 15).map((it, i) => (
-                                <div key={i} className={`article ${it.isOpinion ? 'is-opinion' : ''}`}>
+                            {clustered.slice(0, 15).map((it, i) => (
+                                <div key={i} className="article">
                                     <div className="article-source">
                                         <span>{it.src} • {new Date(it.date).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span>
-                                        <span className={`bookmark-btn ${bookmarks.find(b => b.id === it.id) ? 'active' : ''}`}
-                                              onClick={() => toggleBookmark(it)}>🔖</span>
+                                        <span onClick={() => {
+                                            if (bookmarks.find(b => b.id === it.id)) setBookmarks(bookmarks.filter(b => b.id !== it.id));
+                                            else setBookmarks([it, ...bookmarks]);
+                                        }} className={`bookmark-btn ${bookmarks.find(b => b.id === it.id) ? 'active' : ''}`}>🔖</span>
                                     </div>
-                                    <h3><a href={it.link} target="_blank" rel="noreferrer">{it.title}</a></h3>
-                                    <p>{it.desc}...</p>
-                                    {it.perspectives.length > 0 && (
+                                    <h3 onClick={() => setActiveArt(it)}>{it.title}</h3>
+                                    <p>{it.desc.substring(0, 220)}...</p>
+                                    {it.pers.length > 0 && (
                                         <div className="cluster-box">
-                                            <span className="cluster-tag">Andere Perspektiven ({it.perspectives.length})</span>
-                                            {it.perspectives.map((p, pi) => (
-                                                <div key={pi} style={{marginBottom: '5px'}}>
-                                                    <strong>{p.src}:</strong> <a href={p.link} target="_blank" rel="noreferrer" style={{color: 'inherit', textDecoration: 'none'}}>{p.title}</a>
-                                                </div>
-                                            ))}
+                                            <span style={{fontSize:'0.6rem', fontWeight:'bold', color:'var(--gold)', display:'block', marginBottom:'5px', fontFamily:'Arial'}}>ZWEITE MEINUNG / PERSPEKTIVEN</span>
+                                            {it.pers.map((p, pi) => <div key={pi} onClick={() => setActiveArt(p)} style={{cursor:'pointer', marginBottom:'3px', fontSize:'0.85rem'}}><strong>{p.src}:</strong> {p.title}</div>)}
                                         </div>
                                     )}
                                 </div>
                             ))}
                         </main>
                         <aside>
-                            <div className="sidebar-title">Gemerkt ({bookmarks.length})</div>
-                            {bookmarks.length === 0 && <p style={{fontSize: '0.8rem', color: '#888'}}>Artikel mit 🔖 markieren.</p>}
+                            <div style={{fontFamily:'Arial', fontWeight:'900', textTransform:'uppercase', borderBottom:'2px solid var(--ink)', paddingBottom:'5px', marginBottom:'15px', fontSize:'0.85rem'}}>Gemerkt ({bookmarks.length})</div>
                             {bookmarks.map((b, i) => (
-                                <div key={i} className="sidebar-item">
-                                    <a href={b.link} target="_blank" rel="noreferrer">{b.title}</a>
-                                    <small style={{color: 'var(--accent)', cursor: 'pointer', fontFamily: 'Arial'}} onClick={() => toggleBookmark(b)}>[Entfernen]</small>
+                                <div key={i} style={{fontSize:'0.9rem', marginBottom:'15px', borderBottom:'1px solid #eee', paddingBottom:'10px'}}>
+                                    <span onClick={() => setActiveArt(b)} style={{cursor:'pointer', fontWeight:'bold', display:'block', lineHeight:'1.2'}}>{b.title}</span>
+                                    <small onClick={() => setBookmarks(bookmarks.filter(o => o.id !== b.id))} style={{color:'var(--accent)', cursor:'pointer', fontFamily:'Arial', fontWeight:'bold'}}>[Entfernen]</small>
                                 </div>
                             ))}
                         </aside>
