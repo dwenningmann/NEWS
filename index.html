@@ -3,46 +3,102 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SOUVERÄN | Premium Edition</title>
+    <title>SOUVERÄN | Digitale Edition</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📰</text></svg>">
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <style>
         :root { --paper: #fcfaf5; --ink: #1a1a1a; --border: #2f2f2f; --accent: #8b0000; --dim: #666; --gold: #b8860b; }
-        body { background-color: #dcdcdc; color: var(--ink); font-family: 'Georgia', serif; margin: 0; padding: 10px; }
-        .page { max-width: 1100px; margin: 0 auto; background-color: var(--paper); box-shadow: 0 0 50px rgba(0,0,0,0.3); padding: 40px; border: 1px solid #aaa; min-height: 100vh; }
         
-        /* Ticker */
-        .ticker-wrap { background: var(--ink); color: white; padding: 10px 0; overflow: hidden; font-family: Arial; font-size: 0.7rem; text-transform: uppercase; margin: -40px -40px 30px -40px; border-bottom: 3px solid var(--accent); position: sticky; top: 0; z-index: 100; }
-        .ticker { display: flex; white-space: nowrap; animation: ticker 140s linear infinite; width: fit-content; }
-        .ticker:hover { animation-play-state: paused; }
-        .ticker span { padding: 0 50px; font-weight: bold; letter-spacing: 1.5px; }
-        @keyframes ticker { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
-
-        header { text-align: center; border-bottom: 5px double var(--border); margin-bottom: 30px; }
-        .masthead { font-size: clamp(3rem, 15vw, 6rem); font-weight: 900; letter-spacing: -4px; text-transform: uppercase; margin: 0; line-height: 0.8; }
+        body { background-color: #dcdcdc; color: var(--ink); font-family: 'Georgia', serif; margin: 0; padding: 0; }
         
-        nav { display: flex; justify-content: center; gap: 25px; border-bottom: 1px solid var(--border); padding-bottom: 15px; margin-bottom: 35px; }
-        nav button { background: none; border: none; font-family: Arial; text-transform: uppercase; font-size: 0.8rem; cursor: pointer; font-weight: bold; opacity: 0.5; transition: 0.3s; }
-        nav button.active { opacity: 1; color: var(--accent); border-bottom: 3px solid var(--accent); }
+        .page { 
+            max-width: 1100px; 
+            margin: 20px auto; 
+            background-color: var(--paper); 
+            box-shadow: 0 0 50px rgba(0,0,0,0.2); 
+            padding: 5%; 
+            border: 1px solid #aaa; 
+            min-height: 100vh; 
+        }
 
-        .content-grid { display: grid; grid-template-columns: 2.2fr 1fr; gap: 50px; }
-        @media (max-width: 850px) { .content-grid { grid-template-columns: 1fr; } }
+        header { text-align: center; border-bottom: 3px double var(--border); margin-bottom: 25px; }
+        
+        /* Titel verkleinert & edler */
+        .masthead { 
+            font-size: clamp(2rem, 8vw, 3.5rem); 
+            font-weight: 900; 
+            letter-spacing: -1px; 
+            text-transform: uppercase; 
+            margin: 0; 
+            line-height: 1;
+        }
 
-        /* Artikel & Cluster */
-        .article { border-bottom: 1px solid #ccc; padding-bottom: 30px; margin-bottom: 30px; position: relative; }
-        .article-source { font-family: Arial; font-size: 0.7rem; color: var(--accent); font-weight: 900; margin-bottom: 10px; display: flex; justify-content: space-between; }
-        .bookmark-btn { cursor: pointer; font-size: 1.2rem; filter: grayscale(1); transition: 0.2s; }
-        .bookmark-btn.active { filter: grayscale(0); transform: scale(1.2); }
-        .article h3 { font-size: 1.9rem; margin: 0 0 15px 0; line-height: 1.1; }
+        .meta-line { 
+            font-family: Arial, sans-serif; 
+            font-weight: bold; 
+            border-top: 1px solid black; 
+            margin-top: 10px; 
+            display: flex; 
+            justify-content: space-between; 
+            padding: 8px 0;
+            font-size: clamp(0.6rem, 2vw, 0.75rem);
+            text-transform: uppercase;
+        }
+
+        nav { 
+            display: flex; 
+            justify-content: center; 
+            gap: 15px; 
+            border-bottom: 1px solid var(--border); 
+            padding-bottom: 10px; 
+            margin-bottom: 30px; 
+            flex-wrap: wrap;
+        }
+        
+        nav button { 
+            background: none; 
+            border: none; 
+            font-family: Arial, sans-serif; 
+            text-transform: uppercase; 
+            font-size: 0.75rem; 
+            cursor: pointer; 
+            font-weight: bold; 
+            opacity: 0.5; 
+            padding: 5px;
+        }
+        nav button.active { opacity: 1; color: var(--accent); border-bottom: 2px solid var(--accent); }
+
+        /* Grid für Desktop & Mobile */
+        .content-grid { display: grid; grid-template-columns: 2.2fr 1fr; gap: 40px; }
+        
+        @media (max-width: 850px) { 
+            .content-grid { grid-template-columns: 1fr; } 
+            .page { margin: 0; border: none; padding: 20px; }
+            .meta-line span:nth-child(2) { display: none; } /* Versteckt Redaktionsinfo auf kleinen Handys */
+        }
+
+        .article { border-bottom: 1px solid #ccc; padding-bottom: 25px; margin-bottom: 25px; position: relative; }
+        .article-source { font-family: Arial, sans-serif; font-size: 0.65rem; color: var(--accent); font-weight: 900; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+        
+        .bookmark-btn { cursor: pointer; font-size: 1.1rem; filter: grayscale(1); opacity: 0.4; }
+        .bookmark-btn.active { filter: grayscale(0); opacity: 1; }
+
+        .article h3 { font-size: 1.6rem; margin: 0 0 12px 0; line-height: 1.1; }
         .article h3 a { color: var(--ink); text-decoration: none; }
+        .article p { font-size: 1.05rem; line-height: 1.4; color: #222; margin: 0; text-align: justify; }
         
-        .cluster-box { background: #f0ede6; padding: 15px; margin-top: 15px; border-left: 4px solid var(--gold); font-size: 0.9rem; }
-        .cluster-tag { font-family: Arial; font-weight: bold; color: var(--gold); font-size: 0.65rem; text-transform: uppercase; display: block; margin-bottom: 5px; }
+        .cluster-box { background: #f0ede6; padding: 12px; margin-top: 15px; border-left: 4px solid var(--gold); font-size: 0.85rem; }
+        .cluster-tag { font-family: Arial; font-weight: bold; color: var(--gold); font-size: 0.6rem; text-transform: uppercase; display: block; margin-bottom: 5px; }
         
-        .sidebar-title { font-family: Arial; font-weight: 900; text-transform: uppercase; border-bottom: 3px solid var(--ink); padding-bottom: 5px; margin-bottom: 20px; display: flex; justify-content: space-between; }
-        .loading-bar { height: 4px; background: var(--accent); width: 100%; animation: load 2s infinite; margin-bottom: 30px;}
+        .sidebar-title { font-family: Arial, sans-serif; font-weight: 900; text-transform: uppercase; border-bottom: 2px solid var(--ink); padding-bottom: 5px; margin-bottom: 15px; font-size: 0.85rem; }
+        
+        .loading-bar { height: 3px; background: var(--accent); width: 100%; animation: load 2s infinite; margin-bottom: 30px;}
         @keyframes load { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+
+        .sidebar-item { font-size: 0.9rem; margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid #eee; }
+        .sidebar-item a { text-decoration: none; color: inherit; font-weight: bold; line-height: 1.2; display: block; }
     </style>
 </head>
 <body>
@@ -72,7 +128,10 @@
         const fixEncoding = (t) => {
             if (!t) return "";
             const d = new DOMParser().parseFromString(t, 'text/html');
-            return d.documentElement.textContent.replace(/Ã¤/g, 'ä').replace(/Ã¶/g, 'ö').replace(/Ã¼/g, 'ü').replace(/Ã„/g, 'Ä').replace(/Ã–/g, 'Ö').replace(/Ãœ/g, 'Ü').replace(/ÃŸ/g, 'ß').replace(/â€“/g, '–').replace(/Â/g, '');
+            return d.documentElement.textContent
+                .replace(/Ã¤/g, 'ä').replace(/Ã¶/g, 'ö').replace(/Ã¼/g, 'ü')
+                .replace(/Ã„/g, 'Ä').replace(/Ã–/g, 'Ö').replace(/Ãœ/g, 'Ü')
+                .replace(/ÃŸ/g, 'ß').replace(/â€“/g, '–').replace(/Â/g, '');
         };
 
         function App() {
@@ -97,7 +156,7 @@
                             id: e.querySelector("link")?.textContent || Math.random().toString(),
                             title: fixEncoding(e.querySelector("title")?.textContent || ""),
                             link: e.querySelector("link")?.textContent || e.querySelector("link")?.getAttribute("href") || "#",
-                            desc: fixEncoding(e.querySelector("description")?.textContent || e.querySelector("summary")?.textContent || "").replace(/<[^>]*>?/gm, '').substring(0, 250),
+                            desc: fixEncoding(e.querySelector("description, summary")?.textContent || "").replace(/<[^>]*>?/gm, '').substring(0, 220),
                             src: f.n,
                             date: new Date(e.querySelector("pubDate, published, updated")?.textContent).getTime() || Date.now()
                         }))];
@@ -109,21 +168,16 @@
 
             useEffect(() => { loadNews(cat); }, [cat]);
 
-            // Perspektiven-Cluster Logik
             const clusteredItems = useMemo(() => {
                 let processed = [];
                 let skipIds = new Set();
-
-                rawItems.forEach((item, i) => {
+                rawItems.forEach(item => {
                     if (skipIds.has(item.id)) return;
-                    
-                    // Suche nach ähnlichen Titeln (einfache Keyword-Überschneidung)
-                    const keywords = item.title.toLowerCase().split(/\W+/).filter(w => w.length > 4);
+                    const keywords = item.title.toLowerCase().split(/\W+/).filter(w => w.length > 5);
                     const perspectives = rawItems.filter(other => {
                         if (other.id === item.id) return false;
                         return keywords.some(k => other.title.toLowerCase().includes(k));
                     });
-
                     perspectives.forEach(p => skipIds.add(p.id));
                     processed.push({ ...item, perspectives });
                 });
@@ -137,17 +191,9 @@
 
             return (
                 <div className="page">
-                    <div className="ticker-wrap">
-                        <div className="ticker">
-                            {rawItems.concat(rawItems).slice(0, 20).map((it, i) => (
-                                <span key={i}>+++ {it.title} +++</span>
-                            ))}
-                        </div>
-                    </div>
-
                     <header>
                         <h1 className="masthead">Souverän</h1>
-                        <div style={{fontFamily: 'Arial', fontWeight: 'bold', borderTop: '1px solid black', marginTop: '10px', display: 'flex', justifyContent: 'space-between', padding: '5px 0'}}>
+                        <div className="meta-line">
                             <span>DIENSTAG, 10. MÄRZ 2026</span>
                             <span>REDAKTION STUTTGART</span>
                             <span>NR. 124</span>
@@ -167,12 +213,11 @@
                             {clusteredItems.slice(0, 15).map((it, i) => (
                                 <div key={i} className="article">
                                     <div className="article-source">
-                                        <span>{it.src}</span>
-                                        <span className="bookmark-btn" 
-                                              className={`bookmark-btn ${bookmarks.find(b => b.id === it.id) ? 'active' : ''}`}
+                                        <span>{it.src} • {new Date(it.date).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span>
+                                        <span className={`bookmark-btn ${bookmarks.find(b => b.id === it.id) ? 'active' : ''}`}
                                               onClick={() => toggleBookmark(it)}>🔖</span>
                                     </div>
-                                    <h3><a href={it.link} target="_blank">{it.title}</a></h3>
+                                    <h3><a href={it.link} target="_blank" rel="noreferrer">{it.title}</a></h3>
                                     <p>{it.desc}...</p>
                                     
                                     {it.perspectives.length > 0 && (
@@ -180,7 +225,7 @@
                                             <span className="cluster-tag">Andere Perspektiven ({it.perspectives.length})</span>
                                             {it.perspectives.map((p, pi) => (
                                                 <div key={pi} style={{marginBottom: '5px'}}>
-                                                    <strong>{p.src}:</strong> <a href={p.link} target="_blank" style={{color: 'inherit', textDecoration: 'none'}}>{p.title}</a>
+                                                    <strong>{p.src}:</strong> <a href={p.link} target="_blank" rel="noreferrer" style={{color: 'inherit', textDecoration: 'none'}}>{p.title}</a>
                                                 </div>
                                             ))}
                                         </div>
@@ -190,12 +235,12 @@
                         </main>
 
                         <aside>
-                            <div className="sidebar-title">Gemerkt {bookmarks.length > 0 && <span>({bookmarks.length})</span>}</div>
-                            {bookmarks.length === 0 && <p style={{fontSize: '0.8rem', color: '#888'}}>Klicke auf 🔖 bei einem Artikel, um ihn hier zu speichern.</p>}
+                            <div className="sidebar-title">Gemerkt ({bookmarks.length})</div>
+                            {bookmarks.length === 0 && <p style={{fontSize: '0.8rem', color: '#888'}}>Artikel mit 🔖 markieren, um sie hier zu speichern.</p>}
                             {bookmarks.map((b, i) => (
-                                <div key={i} className="sidebar-item" style={{borderBottom: '1px solid #ddd', paddingBottom: '10px', marginBottom: '10px'}}>
-                                    <a href={b.link} target="_blank" style={{fontSize: '0.9rem', textDecoration: 'none', color: 'black', fontWeight: 'bold'}}>{b.title}</a>
-                                    <small style={{display: 'block', color: 'var(--accent)', cursor: 'pointer'}} onClick={() => toggleBookmark(b)}>[Entfernen]</small>
+                                <div key={i} className="sidebar-item">
+                                    <a href={b.link} target="_blank" rel="noreferrer">{b.title}</a>
+                                    <small style={{color: 'var(--accent)', cursor: 'pointer', fontFamily: 'Arial'}} onClick={() => toggleBookmark(b)}>[Entfernen]</small>
                                 </div>
                             ))}
                         </aside>
