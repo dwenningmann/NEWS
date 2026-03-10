@@ -9,39 +9,47 @@
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <style>
-        :root { --paper: #fcfaf5; --ink: #1a1a1a; --border: #2f2f2f; --accent: #8b0000; }
+        :root { --paper: #fcfaf5; --ink: #1a1a1a; --border: #2f2f2f; --accent: #8b0000; --dim: #666; }
         body { background-color: #dcdcdc; color: var(--ink); font-family: 'Georgia', serif; margin: 0; padding: 10px; line-height: 1.4; }
-        .page { max-width: 1000px; margin: 0 auto; background-color: var(--paper); box-shadow: 0 0 30px rgba(0,0,0,0.2); padding: 40px 20px; border: 1px solid #ccc; min-height: 100vh; }
+        .page { max-width: 1100px; margin: 0 auto; background-color: var(--paper); box-shadow: 0 0 40px rgba(0,0,0,0.2); padding: 40px; border: 1px solid #ccc; min-height: 100vh; }
         
-        /* Ticker */
-        .ticker-wrap { background: var(--ink); color: white; padding: 6px 0; overflow: hidden; font-family: Arial, sans-serif; font-size: 0.75rem; text-transform: uppercase; margin: -40px -20px 30px -20px; border-bottom: 2px solid var(--accent); position: sticky; top: 0; z-index: 100; }
-        .ticker { display: flex; white-space: nowrap; animation: ticker 60s linear infinite; width: fit-content; }
-        .ticker span { padding: 0 30px; font-weight: bold; }
+        /* Ticker - verlangsamt und mit Hover-Stopp */
+        .ticker-wrap { background: var(--ink); color: white; padding: 8px 0; overflow: hidden; font-family: Arial, sans-serif; font-size: 0.75rem; text-transform: uppercase; margin: -40px -40px 30px -40px; border-bottom: 3px solid var(--accent); position: sticky; top: 0; z-index: 100; }
+        .ticker { display: flex; white-space: nowrap; animation: ticker 120s linear infinite; width: fit-content; }
+        .ticker:hover { animation-play-state: paused; cursor: pointer; }
+        .ticker span { padding: 0 40px; font-weight: bold; letter-spacing: 1px; }
         @keyframes ticker { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
 
-        header { text-align: center; border-bottom: 4px double var(--border); margin-bottom: 25px; padding-top: 10px; }
-        .masthead { font-size: clamp(2.5rem, 10vw, 4.5rem); font-weight: 900; letter-spacing: -2px; text-transform: uppercase; margin: 0; }
-        .sub-header { display: flex; justify-content: space-between; padding: 8px 0; font-family: Arial; font-size: 0.7rem; font-weight: bold; border-top: 1px solid var(--border); margin-top: 5px; }
+        header { text-align: center; border-bottom: 5px double var(--border); margin-bottom: 30px; padding-top: 10px; }
+        .masthead { font-size: clamp(2.5rem, 12vw, 5.5rem); font-weight: 900; letter-spacing: -3px; text-transform: uppercase; margin: 0; line-height: 0.85; }
+        .sub-header { display: flex; justify-content: space-between; padding: 12px 0; font-family: Arial; font-size: 0.75rem; font-weight: bold; border-top: 1px solid var(--border); margin-top: 10px; }
         
-        nav { display: flex; justify-content: center; gap: 15px; border-bottom: 1px solid var(--border); padding-bottom: 10px; margin-bottom: 30px; flex-wrap: wrap; }
-        nav button { background: none; border: none; font-family: Arial; text-transform: uppercase; font-size: 0.8rem; cursor: pointer; font-weight: bold; opacity: 0.4; transition: 0.3s; }
-        nav button.active { opacity: 1; border-bottom: 2px solid var(--accent); color: var(--accent); }
+        nav { display: flex; justify-content: center; gap: 20px; border-bottom: 1px solid var(--border); padding-bottom: 15px; margin-bottom: 35px; flex-wrap: wrap; }
+        nav button { background: none; border: none; font-family: Arial; text-transform: uppercase; font-size: 0.85rem; cursor: pointer; font-weight: bold; opacity: 0.4; transition: 0.3s; padding: 5px 15px; }
+        nav button:hover { opacity: 0.8; }
+        nav button.active { opacity: 1; border-bottom: 3px solid var(--accent); color: var(--accent); }
 
-        .content-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 40px; }
-        @media (max-width: 768px) { .content-grid { grid-template-columns: 1fr; } }
+        .content-grid { display: grid; grid-template-columns: 2.2fr 1fr; gap: 50px; }
+        @media (max-width: 850px) { .content-grid { grid-template-columns: 1fr; } }
 
-        .article { border-bottom: 1px solid #ddd; padding-bottom: 25px; margin-bottom: 25px; }
-        .article-source { font-family: Arial; font-size: 0.65rem; text-transform: uppercase; color: var(--accent); font-weight: bold; margin-bottom: 5px; display: block; }
-        .article h3 { font-size: 1.6rem; margin: 5px 0 12px 0; line-height: 1.1; font-weight: bold; }
+        .article { border-bottom: 1px solid #ddd; padding-bottom: 30px; margin-bottom: 30px; display: flex; flex-direction: column; }
+        .article-source { font-family: Arial; font-size: 0.7rem; text-transform: uppercase; color: var(--accent); font-weight: 800; margin-bottom: 8px; display: flex; align-items: center; gap: 10px; }
+        .new-tag { background: var(--accent); color: white; padding: 2px 6px; border-radius: 2px; font-size: 0.6rem; }
+        .article h3 { font-size: 1.85rem; margin: 0 0 15px 0; line-height: 1.1; font-weight: bold; letter-spacing: -0.5px; }
         .article h3 a { color: var(--ink); text-decoration: none; }
-        .article p { font-size: 1.05rem; color: #333; margin: 10px 0; }
+        .article h3 a:hover { color: #444; text-decoration: underline; }
+        .article p { font-size: 1.1rem; color: #222; margin: 0; text-align: justify; }
         
-        .sidebar-title { font-family: Arial; font-size: 0.9rem; border-bottom: 2px solid var(--ink); padding-bottom: 5px; margin-bottom: 15px; text-transform: uppercase; }
-        .sidebar-item { border-bottom: 1px solid #eee; padding: 10px 0; font-size: 0.9rem; }
-        .sidebar-item a { text-decoration: none; color: inherit; font-weight: bold; }
+        .sidebar-title { font-family: Arial; font-size: 1rem; border-bottom: 3px solid var(--ink); padding-bottom: 5px; margin-bottom: 20px; text-transform: uppercase; font-weight: 900; }
+        .sidebar-item { border-bottom: 1px solid #eee; padding: 15px 0; font-size: 0.95rem; }
+        .sidebar-item:first-child { padding-top: 0; }
+        .sidebar-item a { text-decoration: none; color: inherit; font-weight: bold; line-height: 1.3; display: block; }
+        .sidebar-item a:hover { color: var(--accent); }
 
-        .loading-bar { height: 3px; background: var(--accent); width: 100%; animation: load 2s infinite; margin-bottom: 20px;}
+        .loading-bar { height: 4px; background: var(--accent); width: 100%; animation: load 2s infinite; margin-bottom: 30px;}
         @keyframes load { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+        
+        .footer-info { margin-top: 50px; border-top: 1px solid var(--border); padding-top: 20px; font-family: Arial; font-size: 0.7rem; color: var(--dim); text-align: center; text-transform: uppercase; letter-spacing: 1px; }
     </style>
 </head>
 <body>
@@ -68,20 +76,13 @@
             ]
         };
 
-        // Komplexe Korrektur für Umlaute (UTF-8 / ISO Mischmasch)
         const fixEncoding = (text) => {
             if (!text) return "";
-            try {
-                // Versuche HTML Entities zu dekodieren
-                const doc = new DOMParser().parseFromString(text, 'text/html');
-                let decoded = doc.documentElement.textContent;
-                
-                // Manuelle Korrektur für häufige Fehl-Kodierungen (ISO-8859-1 zu UTF-8)
-                return decoded
-                    .replace(/Ã¤/g, 'ä').replace(/Ã¶/g, 'ö').replace(/Ã¼/g, 'ü')
-                    .replace(/Ã„/g, 'Ä').replace(/Ã–/g, 'Ö').replace(/Ãœ/g, 'Ü')
-                    .replace(/ÃŸ/g, 'ß').replace(/Â/g, '').replace(/â€“/g, '–');
-            } catch (e) { return text; }
+            const doc = new DOMParser().parseFromString(text, 'text/html');
+            return doc.documentElement.textContent
+                .replace(/Ã¤/g, 'ä').replace(/Ã¶/g, 'ö').replace(/Ã¼/g, 'ü')
+                .replace(/Ã„/g, 'Ä').replace(/Ã–/g, 'Ö').replace(/Ãœ/g, 'Ü')
+                .replace(/ÃŸ/g, 'ß').replace(/â€“/g, '–').replace(/Â/g, '');
         };
 
         function App() {
@@ -94,24 +95,23 @@
                 let all = [];
                 for (const feed of FEEDS[category]) {
                     try {
-                        const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(feed.u)}`;
-                        const res = await fetch(proxyUrl);
+                        const res = await fetch(`https://corsproxy.io/?${encodeURIComponent(feed.u)}`);
                         const buffer = await res.arrayBuffer();
-                        
-                        // Versuche Text als UTF-8 zu lesen
-                        const decoder = new TextDecoder('utf-8');
-                        const xmlText = decoder.decode(buffer);
-                        
+                        const xmlText = new TextDecoder('utf-8').decode(buffer);
                         const doc = new DOMParser().parseFromString(xmlText, "text/xml");
                         const entries = Array.from(doc.querySelectorAll("item, entry"));
 
-                        const parsed = entries.map(e => ({
-                            title: fixEncoding(e.querySelector("title")?.textContent || ""),
-                            link: e.querySelector("link")?.textContent || e.querySelector("link")?.getAttribute("href") || "#",
-                            desc: fixEncoding(e.querySelector("description")?.textContent || e.querySelector("summary")?.textContent || "").replace(/<[^>]*>?/gm, '').substring(0, 200),
-                            src: feed.n,
-                            date: new Date(e.querySelector("pubDate, published, updated")?.textContent).getTime() || Date.now()
-                        }));
+                        const parsed = entries.map(e => {
+                            const date = new Date(e.querySelector("pubDate, published, updated")?.textContent).getTime() || Date.now();
+                            return {
+                                title: fixEncoding(e.querySelector("title")?.textContent || ""),
+                                link: e.querySelector("link")?.textContent || e.querySelector("link")?.getAttribute("href") || "#",
+                                desc: fixEncoding(e.querySelector("description")?.textContent || e.querySelector("summary")?.textContent || "").replace(/<[^>]*>?/gm, '').substring(0, 250),
+                                src: feed.n,
+                                date: date,
+                                isNew: (Date.now() - date) < 3600000 
+                            };
+                        });
                         all = [...all, ...parsed];
                     } catch (err) { console.error(err); }
                 }
@@ -127,16 +127,16 @@
                         <div className="ticker">
                             {items.length > 0 ? items.concat(items).map((it, i) => (
                                 <span key={i}>+++ {it.title} +++</span>
-                            )) : <span>Lade aktuelle Meldungen...</span>}
+                            )) : <span>SOUVERÄN ANALYSIERT DIE LAGE...</span>}
                         </div>
                     </div>
 
                     <header>
                         <h1 className="masthead">Souverän</h1>
                         <div className="sub-header">
-                            <span>10. MÄRZ 2026</span>
+                            <span>DIENSTAG, 10. MÄRZ 2026</span>
                             <span>STUTTGART • 11°C</span>
-                            <span>NR. 01 / DIGITALE AUSGABE</span>
+                            <span>QUALITÄTSJOURNALISMUS</span>
                         </div>
                     </header>
                     
@@ -150,26 +150,33 @@
 
                     <div className="content-grid">
                         <main>
-                            {items.slice(0, 12).map((it, i) => (
+                            {items.slice(0, 10).map((it, i) => (
                                 <div key={i} className="article">
-                                    <span className="article-source">{it.src}</span>
+                                    <span className="article-source">
+                                        {it.src} {it.isNew && <span className="new-tag">NEU</span>}
+                                    </span>
                                     <h3><a href={it.link} target="_blank" rel="noreferrer">{it.title}</a></h3>
                                     <p>{it.desc}...</p>
-                                    <small style={{color: '#777', fontStyle: 'italic'}}>{new Date(it.date).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})} Uhr</small>
+                                    <small style={{color: 'var(--dim)', marginTop: '15px', fontStyle: 'italic', fontSize: '0.75rem'}}>
+                                        Veröffentlicht um {new Date(it.date).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})} Uhr
+                                    </small>
                                 </div>
                             ))}
                         </main>
                         
                         <aside>
-                            <div className="sidebar-title">Weitere Meldungen</div>
-                            {items.slice(12, 25).map((it, i) => (
+                            <div className="sidebar-title">Kurz gefasst</div>
+                            {items.slice(10, 25).map((it, i) => (
                                 <div key={i} className="sidebar-item">
-                                    <span className="article-source" style={{fontSize: '0.55rem'}}>{it.src}</span>
+                                    <span className="article-source" style={{fontSize: '0.6rem', marginBottom: '4px'}}>{it.src}</span>
                                     <a href={it.link} target="_blank" rel="noreferrer">{it.title}</a>
                                 </div>
                             ))}
                         </aside>
                     </div>
+                    <footer className="footer-info">
+                        © 2026 SOUVERÄN DIGITAL • REDAKTION STUTTGART • UNABHÄNGIG & OBJEKTIV
+                    </footer>
                 </div>
             );
         }
