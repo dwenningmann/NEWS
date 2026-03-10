@@ -9,7 +9,7 @@
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <style>
-        :root { --paper: #fcfaf5; --ink: #1a1a1a; --border: #2f2f2f; --accent: #8b0000; --dim: #666; --gold: #b8860b; }
+        :root { --paper: #fcfaf5; --ink: #1a1a1a; --border: #2f2f2f; --accent: #8b0000; --dim: #666; --gold: #b8860b; --opinion: #f4f1ea; }
         
         body { background-color: #dcdcdc; color: var(--ink); font-family: 'Georgia', serif; margin: 0; padding: 0; }
         
@@ -25,7 +25,6 @@
 
         header { text-align: center; border-bottom: 3px double var(--border); margin-bottom: 25px; }
         
-        /* Titel verkleinert & edler */
         .masthead { 
             font-size: clamp(2rem, 8vw, 3.5rem); 
             font-weight: 900; 
@@ -70,16 +69,17 @@
         }
         nav button.active { opacity: 1; color: var(--accent); border-bottom: 2px solid var(--accent); }
 
-        /* Grid für Desktop & Mobile */
         .content-grid { display: grid; grid-template-columns: 2.2fr 1fr; gap: 40px; }
         
         @media (max-width: 850px) { 
             .content-grid { grid-template-columns: 1fr; } 
             .page { margin: 0; border: none; padding: 20px; }
-            .meta-line span:nth-child(2) { display: none; } /* Versteckt Redaktionsinfo auf kleinen Handys */
         }
 
         .article { border-bottom: 1px solid #ccc; padding-bottom: 25px; margin-bottom: 25px; position: relative; }
+        /* Spezielles Styling für Debatte */
+        .article.is-opinion { background-color: var(--opinion); padding: 20px; border: 1px solid #ddd; border-left: 5px solid var(--accent); }
+
         .article-source { font-family: Arial, sans-serif; font-size: 0.65rem; color: var(--accent); font-weight: 900; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
         
         .bookmark-btn { cursor: pointer; font-size: 1.1rem; filter: grayscale(1); opacity: 0.4; }
@@ -115,9 +115,10 @@
                 { n: "Handelsblatt", u: "https://www.handelsblatt.com/contentexport/feed/topthemen/" },
                 { n: "WiWo", u: "https://www.wiwo.de/contentexport/feed/rss/schlagzeilen" }
             ],
-            "Sport": [
-                { n: "Kicker", u: "https://newsfeed.kicker.de/news/aktuell" },
-                { n: "Sportschau", u: "https://www.sportschau.de/index~rss2.xml" }
+            "Debatte": [
+                { n: "Eurotopics", u: "https://www.eurotopics.net/de/home/rss/" },
+                { n: "NZZ Meinung", u: "https://www.nzz.ch/meinung.rss" },
+                { n: "Cicero", u: "https://www.cicero.de/rss.xml" }
             ],
             "Technik": [
                 { n: "Heise", u: "https://www.heise.de/rss/heise-atom.xml" },
@@ -156,9 +157,10 @@
                             id: e.querySelector("link")?.textContent || Math.random().toString(),
                             title: fixEncoding(e.querySelector("title")?.textContent || ""),
                             link: e.querySelector("link")?.textContent || e.querySelector("link")?.getAttribute("href") || "#",
-                            desc: fixEncoding(e.querySelector("description, summary")?.textContent || "").replace(/<[^>]*>?/gm, '').substring(0, 220),
+                            desc: fixEncoding(e.querySelector("description, summary")?.textContent || "").replace(/<[^>]*>?/gm, '').substring(0, 250),
                             src: f.n,
-                            date: new Date(e.querySelector("pubDate, published, updated")?.textContent).getTime() || Date.now()
+                            date: new Date(e.querySelector("pubDate, published, updated")?.textContent).getTime() || Date.now(),
+                            isOpinion: c === "Debatte"
                         }))];
                     } catch (e) { console.error(e); }
                 }
@@ -211,7 +213,7 @@
                     <div className="content-grid">
                         <main>
                             {clusteredItems.slice(0, 15).map((it, i) => (
-                                <div key={i} className="article">
+                                <div key={i} className={`article ${it.isOpinion ? 'is-opinion' : ''}`}>
                                     <div className="article-source">
                                         <span>{it.src} • {new Date(it.date).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span>
                                         <span className={`bookmark-btn ${bookmarks.find(b => b.id === it.id) ? 'active' : ''}`}
@@ -236,7 +238,7 @@
 
                         <aside>
                             <div className="sidebar-title">Gemerkt ({bookmarks.length})</div>
-                            {bookmarks.length === 0 && <p style={{fontSize: '0.8rem', color: '#888'}}>Artikel mit 🔖 markieren, um sie hier zu speichern.</p>}
+                            {bookmarks.length === 0 && <p style={{fontSize: '0.8rem', color: '#888'}}>Artikel mit 🔖 markieren.</p>}
                             {bookmarks.map((b, i) => (
                                 <div key={i} className="sidebar-item">
                                     <a href={b.link} target="_blank" rel="noreferrer">{b.title}</a>
