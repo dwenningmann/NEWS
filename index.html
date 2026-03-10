@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SOUVERÄN | Einzelschriftausgabe</title>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        :root { --paper: #fcfaf5; --ink: #1a1a1a; --border: #2f2f2f; --accent: #8b0000; }
+        body { background-color: #dcdcdc; color: var(--ink); font-family: 'Georgia', serif; margin: 0; padding: 20px; }
+        
+        .page { max-width: 950px; margin: 0 auto; background-color: var(--paper); box-shadow: 0 0 30px rgba(0,0,0,0.2); padding: 40px; border: 1px solid #ccc; }
+        
+        header { text-align: center; border-bottom: 4px double var(--border); margin-bottom: 30px; }
+        .masthead { font-size: 4.5rem; font-weight: 900; letter-spacing: -2px; text-transform: uppercase; margin: 0; line-height: 1; }
+        .sub-header { display: flex; justify-content: space-between; padding: 10px 5px; font-family: 'Arial', sans-serif; font-size: 0.75rem; font-weight: bold; border-top: 1px solid var(--border); margin-top: 10px; }
+
+        nav { display: flex; justify-content: center; gap: 15px; border-bottom: 1px solid var(--border); padding: 10px 0; margin-bottom: 30px; flex-wrap: wrap; }
+        nav button { background: none; border: none; font-family: 'Arial', sans-serif; text-transform: uppercase; font-size: 0.8rem; cursor: pointer; color: var(--ink); font-weight: bold; padding: 5px 10px; }
+        nav button.active { background-color: var(--ink); color: var(--paper); }
+
+        .columns { display: grid; grid-template-columns: 2fr 1fr; gap: 40px; }
+        @media (max-width: 768px) { .columns { grid-template-columns: 1fr; } }
+
+        .main-article { border-bottom: 1px solid #ddd; padding-bottom: 25px; margin-bottom: 25px; }
+        .main-article:last-child { border-bottom: none; }
+        
+        .article-source { font-family: 'Arial', sans-serif; font-size: 0.7rem; text-transform: uppercase; color: var(--accent); font-weight: bold; display: block; margin-bottom: 5px; }
+        .main-article h3 { font-size: 1.8rem; margin: 0 0 10px 0; line-height: 1.1; }
+        .main-article h3 a { color: var(--ink); text-decoration: none; }
+        .main-article h3 a:hover { text-decoration: underline; }
+        .main-article p { font-size: 1.1rem; line-height: 1.5; color: #333; margin: 10px 0; }
+        .timestamp { font-family: 'Arial', sans-serif; font-size: 0.7rem; color: #777; }
+
+        .sidebar h2 { font-family: 'Arial', sans-serif; font-size: 1rem; border-bottom: 2px solid var(--border); padding-bottom: 5px; margin-top: 0; }
+        .sidebar-item { font-size: 0.9rem; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+        .sidebar-item a { color: var(--ink); text-decoration: none; font-weight: bold; }
+
+        .loading-bar { height: 2px; background: var(--accent); width: 100%; animation: load 1.5s infinite; }
+        @keyframes load { 0% { opacity: 0.2; } 50% { opacity: 1; } 100% { opacity: 0.2; } }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        const RUBRIKEN = {
+            "Politik": [
+                { name: "DLF Nachrichten", url: "https://www.deutschlandfunk.de/nachrichten-100.rss" },
+                { name: "Tagesschau", url: "https://www.tagesschau.de/infosilla/index.xml" }
+            ],
+            "Gesellschaft": [
+                { name: "ZEIT Online", url: "https://newsfeed.zeit.de/index" },
+                { name: "FAZ Gesellschaft", url: "https://www.faz.net/rss/aktuell/gesellschaft/" }
+            ],
+            "Regionales": [
+                { name: "Stuttgarter Zeitung", url: "https://www.stuttgarter-zeitung.de/inhalt.stuttgart-rss.rss.feed.4947477b-6846-444c-9f6f-ef865e90d79b.rss" }
+            ],
+            "Sport": [
+                { name: "Sportschau", url: "https://www.sportschau.de/index~rss2.xml" },
+                { name: "Kicker News", url: "https://newsfeed.kicker.de/news/aktuell" }
+            ],
+            "KI & Technik": [
+                { name: "Heise Online", url: "https://www.heise.de/rss/heise-atom.xml" },
+                { name: "Golem", url: "https://www.golem.de/rss.php?feed=RSS2.0" }
+            ]
+        };
+
+        function App() {
+            const [rubrik, setRubrik] = useState("Politik");
+            const [articles, setArticles] = useState([]);
+            const [loading, setLoading] = useState(false);
+
+            const fetchNews = async (key) => {
+                setLoading(true);
+                let all = [];
+                for (const feed of RUBRIKEN[key]) {
+                    try {
+                        const res = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(feed.url)}`);
+                        const data = await res.json();
+                        if (data.items) {
+                            all = [...all, ...data.items.map(i => ({...i, source: feed.name, ts: new Date(i.pubDate).getTime()}))];
+                        }
+                    } catch (e) { console.error(e); }
+                }
+                setArticles(all.sort((a, b) => b.ts - a.ts));
+                setLoading(false);
+            };
+
+            useEffect(() => { fetchNews(rubrik); }, [rubrik]);
+
+            return (
+                <div className="page">
+                    <header>
+                        <h1 className="masthead">Souverän</h1>
+                        <div className="sub-header">
+                            <span>STUTTGART, DIENSTAG, 10. MÄRZ 2026</span>
+                            <span>NR. 01 / 2026</span>
+                            <span>FREIER JOURNALISMUS</span>
+                        </div>
+                    </header>
+
+                    <nav>
+                        {Object.keys(RUBRIKEN).map(r => (
+                            <button key={r} className={rubrik === r ? "active" : ""} onClick={() => setRubrik(r)}>{r}</button>
+                        ))}
+                    </nav>
+
+                    {loading && <div className="loading-bar"></div>}
+
+                    <div className="columns">
+                        <main>
+                            {articles.slice(0, 8).map((a, i) => (
+                                <article key={i} className="main-article">
+                                    <span className="article-source">{a.source}</span>
+                                    <h3><a href={a.link} target="_blank" rel="noreferrer">{a.title}</a></h3>
+                                    <p>{a.description?.replace(/<[^>]*>?/gm, '').substring(0, 200)}...</p>
+                                    <span className="timestamp">{new Date(a.pubDate).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} Uhr</span>
+                                </article>
+                            ))}
+                        </main>
+
+                        <aside className="sidebar">
+                            <h2>KURZMELDUNGEN</h2>
+                            {articles.slice(8, 15).map((a, i) => (
+                                <div key={i} className="sidebar-item">
+                                    <a href={a.link} target="_blank" rel="noreferrer">{a.title}</a>
+                                    <div className="timestamp" style={{marginTop: '3px'}}>{a.source}</div>
+                                </div>
+                            ))}
+                        </aside>
+                    </div>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
