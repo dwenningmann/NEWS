@@ -11,23 +11,33 @@
         :root { --paper: #fcfaf5; --ink: #1a1a1a; --border: #2f2f2f; --accent: #8b0000; }
         body { background-color: #dcdcdc; color: var(--ink); font-family: 'Georgia', serif; margin: 0; padding: 10px; }
         .page { max-width: 950px; margin: 0 auto; background-color: var(--paper); box-shadow: 0 0 30px rgba(0,0,0,0.2); padding: 5%; border: 1px solid #ccc; min-height: 100vh; }
+        
+        /* Ticker oben */
+        .ticker-wrap { background: var(--ink); color: white; padding: 5px 0; overflow: hidden; font-family: Arial, sans-serif; font-size: 0.7rem; text-transform: uppercase; margin: -10px -10px 10px -10px; }
+        .ticker { display: flex; white-space: nowrap; animation: ticker 30s linear infinite; }
+        .ticker span { padding: 0 20px; }
+        @keyframes ticker { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
+
         header { text-align: center; border-bottom: 4px double var(--border); margin-bottom: 30px; }
-        .masthead { font-size: clamp(2.5rem, 10vw, 5rem); font-weight: 900; letter-spacing: -2px; text-transform: uppercase; margin: 0; line-height: 0.9; }
+        .masthead { font-size: clamp(2.2rem, 8vw, 4.5rem); font-weight: 900; letter-spacing: -2px; text-transform: uppercase; margin: 0; line-height: 0.9; }
         .sub-header { display: flex; justify-content: space-between; padding: 10px 5px; font-family: 'Arial', sans-serif; font-size: clamp(0.6rem, 2vw, 0.75rem); font-weight: bold; border-top: 1px solid var(--border); margin-top: 10px; flex-wrap: wrap; gap: 10px; }
+        
         nav { display: flex; justify-content: center; gap: 10px; border-bottom: 1px solid var(--border); padding: 10px 0; margin-bottom: 30px; flex-wrap: wrap; }
-        nav button { background: none; border: none; font-family: 'Arial', sans-serif; text-transform: uppercase; font-size: 0.75rem; cursor: pointer; color: var(--ink); font-weight: bold; padding: 5px; opacity: 0.6; }
+        nav button { background: none; border: none; font-family: 'Arial', sans-serif; text-transform: uppercase; font-size: 0.75rem; cursor: pointer; color: var(--ink); font-weight: bold; padding: 5px; opacity: 0.5; transition: 0.3s; }
         nav button.active { opacity: 1; border-bottom: 2px solid var(--accent); }
+
         .columns { display: grid; grid-template-columns: 2fr 1fr; gap: 40px; }
         @media (max-width: 768px) { .columns { grid-template-columns: 1fr; } }
+        
         .main-article { border-bottom: 1px solid #ddd; padding-bottom: 25px; margin-bottom: 25px; }
         .article-source { font-family: 'Arial', sans-serif; font-size: 0.7rem; text-transform: uppercase; color: var(--accent); font-weight: bold; display: block; margin-bottom: 5px; }
-        .main-article h3 { font-size: 1.6rem; margin: 0 0 10px 0; line-height: 1.1; }
+        .main-article h3 { font-size: 1.5rem; margin: 0 0 10px 0; line-height: 1.1; }
         .main-article h3 a { color: var(--ink); text-decoration: none; }
-        .main-article p { font-size: 1.05rem; line-height: 1.5; color: #333; margin: 10px 0; }
+        .main-article p { font-size: 1rem; line-height: 1.5; color: #333; margin: 10px 0; }
+        
         .sidebar-item { font-size: 0.85rem; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
         .loading-bar { height: 2px; background: var(--accent); width: 100%; animation: load 1.5s infinite; margin-bottom: 20px;}
         @keyframes load { 0% { opacity: 0.1; } 50% { opacity: 1; } 100% { opacity: 0.1; } }
-        .error-msg { background: #fff1f1; border: 1px solid var(--accent); color: var(--accent); padding: 15px; font-family: Arial; font-size: 0.8rem; margin-bottom: 20px; text-align: center; }
     </style>
 </head>
 <body>
@@ -38,21 +48,21 @@
         const RUBRIKEN = {
             "Politik": [
                 { name: "DLF", url: "https://www.deutschlandfunk.de/nachrichten-100.rss" },
-                { name: "Tagesschau", url: "https://www.tagesschau.de/infosilla/index.xml" }
+                { name: "Tagesschau", url: "https://www.tagesschau.de/newsticker.rss" }
             ],
             "Wirtschaft": [
                 { name: "Handelsblatt", url: "https://www.handelsblatt.com/contentexport/feed/topthemen/" },
-                { name: "The Economist", url: "https://www.economist.com/the-world-this-week/rss.xml" }
+                { name: "WirtschaftsWoche", url: "https://www.wiwo.de/contentexport/feed/rss/schlagzeilen" }
             ],
             "Wissenschaft": [
                 { name: "Spektrum", url: "https://www.spektrum.de/alias/rss/spektrum-der-wissenschaft-news/982911" },
-                { name: "ScienceDaily", url: "https://www.sciencedaily.com/rss/all.xml" }
+                { name: "Zeit Wissen", url: "https://newsfeed.zeit.de/wissen/index" }
             ],
             "Kultur": [
                 { name: "Perlentaucher", url: "https://www.perlentaucher.de/artikel.rss" },
-                { name: "NZZ", url: "https://www.nzz.ch/feuilleton.rss" }
+                { name: "NZZ Kultur", url: "https://www.nzz.ch/feuilleton.rss" }
             ],
-            "KI & Technik": [
+            "Technik": [
                 { name: "Heise", url: "https://www.heise.de/rss/heise-atom.xml" },
                 { name: "Golem", url: "https://www.golem.de/rss.php?feed=RSS2.0" }
             ]
@@ -63,7 +73,6 @@
             const [articles, setArticles] = useState([]);
             const [loading, setLoading] = useState(false);
             const [weather, setWeather] = useState("Stuttgart");
-            const [errorMsg, setErrorMsg] = useState(null);
 
             useEffect(() => {
                 fetch("https://api.open-meteo.com/v1/forecast?latitude=48.78&longitude=9.18&current_weather=true")
@@ -74,30 +83,22 @@
 
             const fetchNews = async (key) => {
                 setLoading(true);
-                setErrorMsg(null);
                 let all = [];
-                
                 for (const feed of RUBRIKEN[key]) {
-                    // Kleiner Delay um 429er Fehler zu vermeiden
-                    await new Promise(r => setTimeout(r, 300));
-                    
                     try {
-                        const res = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(feed.url)}`);
-                        
-                        if (res.status === 429) {
-                            setErrorMsg("Der Server ist aktuell überlastet (429). Bitte warte einen Moment, bevor du die Rubrik wechselst.");
-                            continue;
-                        }
-
+                        const res = await fetch(`https://rss.bloople.net/index.php?url=${encodeURIComponent(feed.url)}&detail=yes&type=json`);
                         const data = await res.json();
-                        if (data.items) {
-                            all = [...all, ...data.items.map(i => ({...i, source: feed.name, ts: new Date(i.pubDate).getTime()}))];
+                        if (Array.isArray(data)) {
+                            all = [...all, ...data.map(i => ({
+                                title: i.title,
+                                link: i.link,
+                                description: i.summary || i.description || "",
+                                source: feed.name,
+                                ts: new Date(i.pubDate).getTime() || Date.now()
+                            }))];
                         }
-                    } catch (e) { 
-                        console.error("Feed Error:", e);
-                    }
+                    } catch (e) { console.error("Fehler:", feed.name); }
                 }
-                
                 setArticles(all.sort((a, b) => b.ts - a.ts));
                 setLoading(false);
             };
@@ -106,6 +107,15 @@
 
             return (
                 <div className="page">
+                    <div className="ticker-wrap">
+                        <div className="ticker">
+                            <span>+++ SOUVERÄN LIVE-FEED +++</span>
+                            {articles.slice(0, 5).map((a, i) => (
+                                <span key={i}>{a.title} +++</span>
+                            ))}
+                        </div>
+                    </div>
+
                     <header>
                         <h1 className="masthead">Souverän</h1>
                         <div className="sub-header">
@@ -114,31 +124,26 @@
                             <span>NR. 01 / QUALITÄTSJOURNALISMUS</span>
                         </div>
                     </header>
-
                     <nav>
                         {Object.keys(RUBRIKEN).map(r => (
                             <button key={r} className={rubrik === r ? "active" : ""} onClick={() => setRubrik(r)}>{r}</button>
                         ))}
                     </nav>
-
                     {loading && <div className="loading-bar"></div>}
-                    {errorMsg && <div className="error-msg">{errorMsg}</div>}
-
                     <div className="columns">
                         <main>
-                            {articles.length === 0 && !loading && <p>Keine Artikel geladen. Bitte aktualisieren.</p>}
-                            {articles.slice(0, 8).map((a, i) => (
+                            {articles.slice(0, 10).map((a, i) => (
                                 <article key={i} className="main-article">
                                     <span className="article-source">{a.source}</span>
                                     <h3><a href={a.link} target="_blank" rel="noreferrer">{a.title}</a></h3>
-                                    <p>{a.description?.replace(/<[^>]*>?/gm, '').substring(0, 160)}...</p>
-                                    <span style={{fontSize: '0.7rem', color: '#777'}}>{new Date(a.pubDate).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} Uhr</span>
+                                    <p>{a.description.replace(/<[^>]*>?/gm, '').substring(0, 200)}...</p>
+                                    <span style={{fontSize: '0.7rem', color: '#777'}}>{new Date(a.ts).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} Uhr</span>
                                 </article>
                             ))}
                         </main>
                         <aside className="sidebar">
                             <h2>KURZNACHRICHTEN</h2>
-                            {articles.slice(8, 15).map((a, i) => (
+                            {articles.slice(10, 20).map((a, i) => (
                                 <div key={i} className="sidebar-item">
                                     <a href={a.link} target="_blank" rel="noreferrer" style={{color: 'inherit', textDecoration: 'none', fontWeight: 'bold'}}>{a.title}</a>
                                     <div style={{fontSize: '0.7rem', color: '#777', marginTop: '3px'}}>{a.source}</div>
@@ -149,9 +154,7 @@
                 </div>
             );
         }
-
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<App />);
+        ReactDOM.createRoot(document.getElementById('root')).render(<App />);
     </script>
 </body>
 </html>
