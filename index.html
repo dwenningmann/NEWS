@@ -3,59 +3,52 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SOUVERÄN | Digitale Edition</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📰</text></svg>">
+    <title>SOUVERÄN | Premium Edition</title>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <style>
-        :root { --paper: #fcfaf5; --ink: #1a1a1a; --border: #2f2f2f; --accent: #8b0000; --dim: #666; }
-        body { background-color: #dcdcdc; color: var(--ink); font-family: 'Georgia', serif; margin: 0; padding: 10px; line-height: 1.4; }
-        .page { max-width: 1100px; margin: 0 auto; background-color: var(--paper); box-shadow: 0 0 40px rgba(0,0,0,0.2); padding: 40px; border: 1px solid #ccc; min-height: 100vh; }
+        :root { --paper: #fcfaf5; --ink: #1a1a1a; --border: #2f2f2f; --accent: #8b0000; --dim: #666; --gold: #b8860b; }
+        body { background-color: #dcdcdc; color: var(--ink); font-family: 'Georgia', serif; margin: 0; padding: 10px; }
+        .page { max-width: 1100px; margin: 0 auto; background-color: var(--paper); box-shadow: 0 0 50px rgba(0,0,0,0.3); padding: 40px; border: 1px solid #aaa; min-height: 100vh; }
         
-        /* Ticker - verlangsamt und mit Hover-Stopp */
-        .ticker-wrap { background: var(--ink); color: white; padding: 8px 0; overflow: hidden; font-family: Arial, sans-serif; font-size: 0.75rem; text-transform: uppercase; margin: -40px -40px 30px -40px; border-bottom: 3px solid var(--accent); position: sticky; top: 0; z-index: 100; }
-        .ticker { display: flex; white-space: nowrap; animation: ticker 120s linear infinite; width: fit-content; }
-        .ticker:hover { animation-play-state: paused; cursor: pointer; }
-        .ticker span { padding: 0 40px; font-weight: bold; letter-spacing: 1px; }
+        /* Ticker */
+        .ticker-wrap { background: var(--ink); color: white; padding: 10px 0; overflow: hidden; font-family: Arial; font-size: 0.7rem; text-transform: uppercase; margin: -40px -40px 30px -40px; border-bottom: 3px solid var(--accent); position: sticky; top: 0; z-index: 100; }
+        .ticker { display: flex; white-space: nowrap; animation: ticker 140s linear infinite; width: fit-content; }
+        .ticker:hover { animation-play-state: paused; }
+        .ticker span { padding: 0 50px; font-weight: bold; letter-spacing: 1.5px; }
         @keyframes ticker { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
 
-        header { text-align: center; border-bottom: 5px double var(--border); margin-bottom: 30px; padding-top: 10px; }
-        .masthead { font-size: clamp(2.5rem, 12vw, 5.5rem); font-weight: 900; letter-spacing: -3px; text-transform: uppercase; margin: 0; line-height: 0.85; }
-        .sub-header { display: flex; justify-content: space-between; padding: 12px 0; font-family: Arial; font-size: 0.75rem; font-weight: bold; border-top: 1px solid var(--border); margin-top: 10px; }
+        header { text-align: center; border-bottom: 5px double var(--border); margin-bottom: 30px; }
+        .masthead { font-size: clamp(3rem, 15vw, 6rem); font-weight: 900; letter-spacing: -4px; text-transform: uppercase; margin: 0; line-height: 0.8; }
         
-        nav { display: flex; justify-content: center; gap: 20px; border-bottom: 1px solid var(--border); padding-bottom: 15px; margin-bottom: 35px; flex-wrap: wrap; }
-        nav button { background: none; border: none; font-family: Arial; text-transform: uppercase; font-size: 0.85rem; cursor: pointer; font-weight: bold; opacity: 0.4; transition: 0.3s; padding: 5px 15px; }
-        nav button:hover { opacity: 0.8; }
-        nav button.active { opacity: 1; border-bottom: 3px solid var(--accent); color: var(--accent); }
+        nav { display: flex; justify-content: center; gap: 25px; border-bottom: 1px solid var(--border); padding-bottom: 15px; margin-bottom: 35px; }
+        nav button { background: none; border: none; font-family: Arial; text-transform: uppercase; font-size: 0.8rem; cursor: pointer; font-weight: bold; opacity: 0.5; transition: 0.3s; }
+        nav button.active { opacity: 1; color: var(--accent); border-bottom: 3px solid var(--accent); }
 
         .content-grid { display: grid; grid-template-columns: 2.2fr 1fr; gap: 50px; }
         @media (max-width: 850px) { .content-grid { grid-template-columns: 1fr; } }
 
-        .article { border-bottom: 1px solid #ddd; padding-bottom: 30px; margin-bottom: 30px; display: flex; flex-direction: column; }
-        .article-source { font-family: Arial; font-size: 0.7rem; text-transform: uppercase; color: var(--accent); font-weight: 800; margin-bottom: 8px; display: flex; align-items: center; gap: 10px; }
-        .new-tag { background: var(--accent); color: white; padding: 2px 6px; border-radius: 2px; font-size: 0.6rem; }
-        .article h3 { font-size: 1.85rem; margin: 0 0 15px 0; line-height: 1.1; font-weight: bold; letter-spacing: -0.5px; }
+        /* Artikel & Cluster */
+        .article { border-bottom: 1px solid #ccc; padding-bottom: 30px; margin-bottom: 30px; position: relative; }
+        .article-source { font-family: Arial; font-size: 0.7rem; color: var(--accent); font-weight: 900; margin-bottom: 10px; display: flex; justify-content: space-between; }
+        .bookmark-btn { cursor: pointer; font-size: 1.2rem; filter: grayscale(1); transition: 0.2s; }
+        .bookmark-btn.active { filter: grayscale(0); transform: scale(1.2); }
+        .article h3 { font-size: 1.9rem; margin: 0 0 15px 0; line-height: 1.1; }
         .article h3 a { color: var(--ink); text-decoration: none; }
-        .article h3 a:hover { color: #444; text-decoration: underline; }
-        .article p { font-size: 1.1rem; color: #222; margin: 0; text-align: justify; }
         
-        .sidebar-title { font-family: Arial; font-size: 1rem; border-bottom: 3px solid var(--ink); padding-bottom: 5px; margin-bottom: 20px; text-transform: uppercase; font-weight: 900; }
-        .sidebar-item { border-bottom: 1px solid #eee; padding: 15px 0; font-size: 0.95rem; }
-        .sidebar-item:first-child { padding-top: 0; }
-        .sidebar-item a { text-decoration: none; color: inherit; font-weight: bold; line-height: 1.3; display: block; }
-        .sidebar-item a:hover { color: var(--accent); }
-
+        .cluster-box { background: #f0ede6; padding: 15px; margin-top: 15px; border-left: 4px solid var(--gold); font-size: 0.9rem; }
+        .cluster-tag { font-family: Arial; font-weight: bold; color: var(--gold); font-size: 0.65rem; text-transform: uppercase; display: block; margin-bottom: 5px; }
+        
+        .sidebar-title { font-family: Arial; font-weight: 900; text-transform: uppercase; border-bottom: 3px solid var(--ink); padding-bottom: 5px; margin-bottom: 20px; display: flex; justify-content: space-between; }
         .loading-bar { height: 4px; background: var(--accent); width: 100%; animation: load 2s infinite; margin-bottom: 30px;}
         @keyframes load { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
-        
-        .footer-info { margin-top: 50px; border-top: 1px solid var(--border); padding-top: 20px; font-family: Arial; font-size: 0.7rem; color: var(--dim); text-align: center; text-transform: uppercase; letter-spacing: 1px; }
     </style>
 </head>
 <body>
     <div id="root"></div>
     <script type="text/babel">
-        const { useState, useEffect } = React;
+        const { useState, useEffect, useMemo } = React;
 
         const FEEDS = {
             "Politik": [
@@ -76,70 +69,91 @@
             ]
         };
 
-        const fixEncoding = (text) => {
-            if (!text) return "";
-            const doc = new DOMParser().parseFromString(text, 'text/html');
-            return doc.documentElement.textContent
-                .replace(/Ã¤/g, 'ä').replace(/Ã¶/g, 'ö').replace(/Ã¼/g, 'ü')
-                .replace(/Ã„/g, 'Ä').replace(/Ã–/g, 'Ö').replace(/Ãœ/g, 'Ü')
-                .replace(/ÃŸ/g, 'ß').replace(/â€“/g, '–').replace(/Â/g, '');
+        const fixEncoding = (t) => {
+            if (!t) return "";
+            const d = new DOMParser().parseFromString(t, 'text/html');
+            return d.documentElement.textContent.replace(/Ã¤/g, 'ä').replace(/Ã¶/g, 'ö').replace(/Ã¼/g, 'ü').replace(/Ã„/g, 'Ä').replace(/Ã–/g, 'Ö').replace(/Ãœ/g, 'Ü').replace(/ÃŸ/g, 'ß').replace(/â€“/g, '–').replace(/Â/g, '');
         };
 
         function App() {
             const [cat, setCat] = useState("Politik");
-            const [items, setItems] = useState([]);
+            const [rawItems, setRawItems] = useState([]);
+            const [bookmarks, setBookmarks] = useState(JSON.parse(localStorage.getItem('bookmarks') || '[]'));
             const [loading, setLoading] = useState(false);
 
-            const loadNews = async (category) => {
+            useEffect(() => { localStorage.setItem('bookmarks', JSON.stringify(bookmarks)); }, [bookmarks]);
+
+            const loadNews = async (c) => {
                 setLoading(true);
                 let all = [];
-                for (const feed of FEEDS[category]) {
+                for (const f of FEEDS[c]) {
                     try {
-                        const res = await fetch(`https://corsproxy.io/?${encodeURIComponent(feed.u)}`);
-                        const buffer = await res.arrayBuffer();
-                        const xmlText = new TextDecoder('utf-8').decode(buffer);
-                        const doc = new DOMParser().parseFromString(xmlText, "text/xml");
+                        const res = await fetch(`https://corsproxy.io/?${encodeURIComponent(f.u)}`);
+                        const buf = await res.arrayBuffer();
+                        const xml = new TextDecoder('utf-8').decode(buf);
+                        const doc = new DOMParser().parseFromString(xml, "text/xml");
                         const entries = Array.from(doc.querySelectorAll("item, entry"));
-
-                        const parsed = entries.map(e => {
-                            const date = new Date(e.querySelector("pubDate, published, updated")?.textContent).getTime() || Date.now();
-                            return {
-                                title: fixEncoding(e.querySelector("title")?.textContent || ""),
-                                link: e.querySelector("link")?.textContent || e.querySelector("link")?.getAttribute("href") || "#",
-                                desc: fixEncoding(e.querySelector("description")?.textContent || e.querySelector("summary")?.textContent || "").replace(/<[^>]*>?/gm, '').substring(0, 250),
-                                src: feed.n,
-                                date: date,
-                                isNew: (Date.now() - date) < 3600000 
-                            };
-                        });
-                        all = [...all, ...parsed];
-                    } catch (err) { console.error(err); }
+                        all = [...all, ...entries.map(e => ({
+                            id: e.querySelector("link")?.textContent || Math.random().toString(),
+                            title: fixEncoding(e.querySelector("title")?.textContent || ""),
+                            link: e.querySelector("link")?.textContent || e.querySelector("link")?.getAttribute("href") || "#",
+                            desc: fixEncoding(e.querySelector("description")?.textContent || e.querySelector("summary")?.textContent || "").replace(/<[^>]*>?/gm, '').substring(0, 250),
+                            src: f.n,
+                            date: new Date(e.querySelector("pubDate, published, updated")?.textContent).getTime() || Date.now()
+                        }))];
+                    } catch (e) { console.error(e); }
                 }
-                setItems(all.sort((a, b) => b.date - a.date));
+                setRawItems(all.sort((a, b) => b.date - a.date));
                 setLoading(false);
             };
 
             useEffect(() => { loadNews(cat); }, [cat]);
 
+            // Perspektiven-Cluster Logik
+            const clusteredItems = useMemo(() => {
+                let processed = [];
+                let skipIds = new Set();
+
+                rawItems.forEach((item, i) => {
+                    if (skipIds.has(item.id)) return;
+                    
+                    // Suche nach ähnlichen Titeln (einfache Keyword-Überschneidung)
+                    const keywords = item.title.toLowerCase().split(/\W+/).filter(w => w.length > 4);
+                    const perspectives = rawItems.filter(other => {
+                        if (other.id === item.id) return false;
+                        return keywords.some(k => other.title.toLowerCase().includes(k));
+                    });
+
+                    perspectives.forEach(p => skipIds.add(p.id));
+                    processed.push({ ...item, perspectives });
+                });
+                return processed;
+            }, [rawItems]);
+
+            const toggleBookmark = (it) => {
+                if (bookmarks.find(b => b.id === it.id)) setBookmarks(bookmarks.filter(b => b.id !== it.id));
+                else setBookmarks([it, ...bookmarks]);
+            };
+
             return (
                 <div className="page">
                     <div className="ticker-wrap">
                         <div className="ticker">
-                            {items.length > 0 ? items.concat(items).map((it, i) => (
+                            {rawItems.concat(rawItems).slice(0, 20).map((it, i) => (
                                 <span key={i}>+++ {it.title} +++</span>
-                            )) : <span>SOUVERÄN ANALYSIERT DIE LAGE...</span>}
+                            ))}
                         </div>
                     </div>
 
                     <header>
                         <h1 className="masthead">Souverän</h1>
-                        <div className="sub-header">
+                        <div style={{fontFamily: 'Arial', fontWeight: 'bold', borderTop: '1px solid black', marginTop: '10px', display: 'flex', justifyContent: 'space-between', padding: '5px 0'}}>
                             <span>DIENSTAG, 10. MÄRZ 2026</span>
-                            <span>STUTTGART • 11°C</span>
-                            <span>QUALITÄTSJOURNALISMUS</span>
+                            <span>REDAKTION STUTTGART</span>
+                            <span>NR. 124</span>
                         </div>
                     </header>
-                    
+
                     <nav>
                         {Object.keys(FEEDS).map(c => (
                             <button key={c} className={cat === c ? "active" : ""} onClick={() => setCat(c)}>{c}</button>
@@ -150,33 +164,42 @@
 
                     <div className="content-grid">
                         <main>
-                            {items.slice(0, 10).map((it, i) => (
+                            {clusteredItems.slice(0, 15).map((it, i) => (
                                 <div key={i} className="article">
-                                    <span className="article-source">
-                                        {it.src} {it.isNew && <span className="new-tag">NEU</span>}
-                                    </span>
-                                    <h3><a href={it.link} target="_blank" rel="noreferrer">{it.title}</a></h3>
+                                    <div className="article-source">
+                                        <span>{it.src}</span>
+                                        <span className="bookmark-btn" 
+                                              className={`bookmark-btn ${bookmarks.find(b => b.id === it.id) ? 'active' : ''}`}
+                                              onClick={() => toggleBookmark(it)}>🔖</span>
+                                    </div>
+                                    <h3><a href={it.link} target="_blank">{it.title}</a></h3>
                                     <p>{it.desc}...</p>
-                                    <small style={{color: 'var(--dim)', marginTop: '15px', fontStyle: 'italic', fontSize: '0.75rem'}}>
-                                        Veröffentlicht um {new Date(it.date).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})} Uhr
-                                    </small>
+                                    
+                                    {it.perspectives.length > 0 && (
+                                        <div className="cluster-box">
+                                            <span className="cluster-tag">Andere Perspektiven ({it.perspectives.length})</span>
+                                            {it.perspectives.map((p, pi) => (
+                                                <div key={pi} style={{marginBottom: '5px'}}>
+                                                    <strong>{p.src}:</strong> <a href={p.link} target="_blank" style={{color: 'inherit', textDecoration: 'none'}}>{p.title}</a>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
                                 </div>
                             ))}
                         </main>
-                        
+
                         <aside>
-                            <div className="sidebar-title">Kurz gefasst</div>
-                            {items.slice(10, 25).map((it, i) => (
-                                <div key={i} className="sidebar-item">
-                                    <span className="article-source" style={{fontSize: '0.6rem', marginBottom: '4px'}}>{it.src}</span>
-                                    <a href={it.link} target="_blank" rel="noreferrer">{it.title}</a>
+                            <div className="sidebar-title">Gemerkt {bookmarks.length > 0 && <span>({bookmarks.length})</span>}</div>
+                            {bookmarks.length === 0 && <p style={{fontSize: '0.8rem', color: '#888'}}>Klicke auf 🔖 bei einem Artikel, um ihn hier zu speichern.</p>}
+                            {bookmarks.map((b, i) => (
+                                <div key={i} className="sidebar-item" style={{borderBottom: '1px solid #ddd', paddingBottom: '10px', marginBottom: '10px'}}>
+                                    <a href={b.link} target="_blank" style={{fontSize: '0.9rem', textDecoration: 'none', color: 'black', fontWeight: 'bold'}}>{b.title}</a>
+                                    <small style={{display: 'block', color: 'var(--accent)', cursor: 'pointer'}} onClick={() => toggleBookmark(b)}>[Entfernen]</small>
                                 </div>
                             ))}
                         </aside>
                     </div>
-                    <footer className="footer-info">
-                        © 2026 SOUVERÄN DIGITAL • REDAKTION STUTTGART • UNABHÄNGIG & OBJEKTIV
-                    </footer>
                 </div>
             );
         }
