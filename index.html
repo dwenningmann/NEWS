@@ -11,20 +11,37 @@
     <style>
         :root { --paper: #fcfaf5; --ink: #1a1a1a; --border: #2f2f2f; --accent: #8b0000; }
         body { background-color: #dcdcdc; color: var(--ink); font-family: 'Georgia', serif; margin: 0; padding: 10px; line-height: 1.4; }
-        .page { max-width: 900px; margin: 0 auto; background-color: var(--paper); box-shadow: 0 0 30px rgba(0,0,0,0.2); padding: 40px 20px; border: 1px solid #ccc; min-height: 100vh; }
+        .page { max-width: 1000px; margin: 0 auto; background-color: var(--paper); box-shadow: 0 0 30px rgba(0,0,0,0.2); padding: 40px 20px; border: 1px solid #ccc; min-height: 100vh; }
+        
+        /* Ticker */
+        .ticker-wrap { background: var(--ink); color: white; padding: 6px 0; overflow: hidden; font-family: Arial, sans-serif; font-size: 0.75rem; text-transform: uppercase; margin: -40px -20px 30px -20px; border-bottom: 2px solid var(--accent); }
+        .ticker { display: flex; white-space: nowrap; animation: ticker 40s linear infinite; }
+        .ticker span { padding: 0 30px; font-weight: bold; }
+        @keyframes ticker { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+
         header { text-align: center; border-bottom: 4px double var(--border); margin-bottom: 25px; }
-        .masthead { font-size: clamp(2rem, 8vw, 4rem); font-weight: 900; letter-spacing: -2px; text-transform: uppercase; margin: 0; }
+        .masthead { font-size: clamp(2.5rem, 10vw, 4.5rem); font-weight: 900; letter-spacing: -2px; text-transform: uppercase; margin: 0; }
         .sub-header { display: flex; justify-content: space-between; padding: 8px 0; font-family: Arial; font-size: 0.7rem; font-weight: bold; border-top: 1px solid var(--border); margin-top: 5px; }
-        nav { display: flex; justify-content: center; gap: 10px; border-bottom: 1px solid var(--border); padding-bottom: 10px; margin-bottom: 25px; flex-wrap: wrap; }
-        nav button { background: none; border: none; font-family: Arial; text-transform: uppercase; font-size: 0.75rem; cursor: pointer; font-weight: bold; opacity: 0.5; padding: 5px 10px; }
-        nav button.active { opacity: 1; border-bottom: 2px solid var(--accent); }
-        .article { border-bottom: 1px solid #ddd; padding-bottom: 20px; margin-bottom: 20px; }
-        .article-source { font-family: Arial; font-size: 0.65rem; text-transform: uppercase; color: var(--accent); font-weight: bold; }
-        .article h3 { font-size: 1.4rem; margin: 5px 0; line-height: 1.2; }
+        
+        nav { display: flex; justify-content: center; gap: 15px; border-bottom: 1px solid var(--border); padding-bottom: 10px; margin-bottom: 30px; flex-wrap: wrap; }
+        nav button { background: none; border: none; font-family: Arial; text-transform: uppercase; font-size: 0.8rem; cursor: pointer; font-weight: bold; opacity: 0.4; transition: 0.3s; }
+        nav button.active { opacity: 1; border-bottom: 2px solid var(--accent); color: var(--accent); }
+
+        .content-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 40px; }
+        @media (max-width: 768px) { .content-grid { grid-template-columns: 1fr; } }
+
+        .article { border-bottom: 1px solid #ddd; padding-bottom: 25px; margin-bottom: 25px; }
+        .article-source { font-family: Arial; font-size: 0.65rem; text-transform: uppercase; color: var(--accent); font-weight: bold; margin-bottom: 5px; display: block; }
+        .article h3 { font-size: 1.6rem; margin: 5px 0 12px 0; line-height: 1.1; }
         .article h3 a { color: var(--ink); text-decoration: none; }
-        .article p { font-size: 1rem; color: #333; margin: 8px 0; }
-        .loading-bar { height: 2px; background: var(--accent); width: 100%; animation: load 1.5s infinite; margin-bottom: 20px;}
-        @keyframes load { 0%, 100% { opacity: 0.2; } 50% { opacity: 1; } }
+        .article p { font-size: 1.05rem; color: #333; margin: 10px 0; }
+        
+        .sidebar-title { font-family: Arial; font-size: 0.9rem; border-bottom: 2px solid var(--ink); padding-bottom: 5px; margin-bottom: 15px; text-transform: uppercase; }
+        .sidebar-item { border-bottom: 1px solid #eee; padding: 10px 0; font-size: 0.9rem; }
+        .sidebar-item a { text-decoration: none; color: inherit; font-weight: bold; }
+
+        .loading-bar { height: 3px; background: var(--accent); width: 100%; animation: load 2s infinite; margin-bottom: 20px;}
+        @keyframes load { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
     </style>
 </head>
 <body>
@@ -41,10 +58,20 @@
                 { n: "Handelsblatt", u: "https://www.handelsblatt.com/contentexport/feed/topthemen/" },
                 { n: "WiWo", u: "https://www.wiwo.de/contentexport/feed/rss/schlagzeilen" }
             ],
+            "Sport": [
+                { n: "Kicker", u: "https://newsfeed.kicker.de/news/aktuell" },
+                { n: "Sportschau", u: "https://www.sportschau.de/index~rss2.xml" }
+            ],
             "Technik": [
                 { n: "Heise", u: "https://www.heise.de/rss/heise-atom.xml" },
                 { n: "Golem", u: "https://www.golem.de/rss.php?feed=RSS2.0" }
             ]
+        };
+
+        const decodeHTMLEntities = (text) => {
+            const textArea = document.createElement('textarea');
+            textArea.innerHTML = text;
+            return textArea.value;
         };
 
         function App() {
@@ -57,35 +84,21 @@
                 let all = [];
                 for (const feed of FEEDS[category]) {
                     try {
-                        // Verwendung von CORSProxy.io - spezialisiert auf Browser-Requests
                         const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(feed.u)}`;
                         const res = await fetch(proxyUrl);
                         const xmlText = await res.text();
-                        
-                        const parser = new DOMParser();
-                        const doc = parser.parseFromString(xmlText, "text/xml");
-                        
-                        // Unterstützung für RSS (item) und Atom (entry)
+                        const doc = new DOMParser().parseFromString(xmlText, "text/xml");
                         const entries = Array.from(doc.querySelectorAll("item, entry"));
 
-                        const parsed = entries.map(e => {
-                            const title = e.querySelector("title")?.textContent || "";
-                            const link = e.querySelector("link")?.textContent || e.querySelector("link")?.getAttribute("href") || "#";
-                            const description = e.querySelector("description")?.textContent || e.querySelector("summary")?.textContent || "";
-                            const dateStr = e.querySelector("pubDate, published, updated")?.textContent || "";
-                            
-                            return {
-                                title,
-                                link,
-                                desc: description.replace(/<[^>]*>?/gm, '').substring(0, 180),
-                                src: feed.n,
-                                date: new Date(dateStr).getTime() || Date.now()
-                            };
-                        });
+                        const parsed = entries.map(e => ({
+                            title: decodeHTMLEntities(e.querySelector("title")?.textContent || ""),
+                            link: e.querySelector("link")?.textContent || e.querySelector("link")?.getAttribute("href") || "#",
+                            desc: decodeHTMLEntities(e.querySelector("description")?.textContent || e.querySelector("summary")?.textContent || "").replace(/<[^>]*>?/gm, '').substring(0, 200),
+                            src: feed.n,
+                            date: new Date(e.querySelector("pubDate, published, updated")?.textContent).getTime() || Date.now()
+                        }));
                         all = [...all, ...parsed];
-                    } catch (err) { 
-                        console.error("Fehler bei Quelle:", feed.n, err); 
-                    }
+                    } catch (err) { console.error(err); }
                 }
                 setItems(all.sort((a, b) => b.date - a.date));
                 setLoading(false);
@@ -95,33 +108,53 @@
 
             return (
                 <div className="page">
+                    <div className="ticker-wrap">
+                        <div className="ticker">
+                            {items.concat(items).slice(0, 20).map((it, i) => (
+                                <span key={i}>+++ {it.title} +++</span>
+                            ))}
+                        </div>
+                    </div>
+
                     <header>
                         <h1 className="masthead">Souverän</h1>
                         <div className="sub-header">
-                            <span>10. MÄRZ 2026</span>
-                            <span>STUTTGART • 10°C</span>
-                            <span>NR. 01 / QUALITÄTSJOURNALISMUS</span>
+                            <span>DIENSTAG, 10. MÄRZ 2026</span>
+                            <span>STUTTGART • 11°C</span>
+                            <span>NR. 01 / DIGITALE AUSGABE</span>
                         </div>
                     </header>
+                    
                     <nav>
                         {Object.keys(FEEDS).map(c => (
                             <button key={c} className={cat === c ? "active" : ""} onClick={() => setCat(c)}>{c}</button>
                         ))}
                     </nav>
+
                     {loading && <div className="loading-bar"></div>}
-                    <main>
-                        {items.length === 0 && !loading && (
-                            <p style={{textAlign:'center', color: 'var(--accent)'}}>Daten konnten nicht geladen werden. Bitte Seite aktualisieren.</p>
-                        )}
-                        {items.map((it, i) => (
-                            <div key={i} className="article">
-                                <span className="article-source">{it.src}</span>
-                                <h3><a href={it.link} target="_blank" rel="noreferrer">{it.title}</a></h3>
-                                <p>{it.desc}...</p>
-                                <small style={{color: '#777'}}>{new Date(it.date).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})} Uhr</small>
-                            </div>
-                        ))}
-                    </main>
+
+                    <div className="content-grid">
+                        <main>
+                            {items.slice(0, 12).map((it, i) => (
+                                <div key={i} className="article">
+                                    <span className="article-source">{it.src}</span>
+                                    <h3><a href={it.link} target="_blank" rel="noreferrer">{it.title}</a></h3>
+                                    <p>{it.desc}...</p>
+                                    <small style={{color: '#777', fontStyle: 'italic'}}>{new Date(it.date).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})} Uhr</small>
+                                </div>
+                            ))}
+                        </main>
+                        
+                        <aside>
+                            <div className="sidebar-title">Weitere Meldungen</div>
+                            {items.slice(12, 25).map((it, i) => (
+                                <div key={i} className="sidebar-item">
+                                    <span className="article-source" style={{fontSize: '0.55rem'}}>{it.src}</span>
+                                    <a href={it.link} target="_blank" rel="noreferrer">{it.title}</a>
+                                </div>
+                            ))}
+                        </aside>
+                    </div>
                 </div>
             );
         }
