@@ -57,24 +57,35 @@
                 let all = [];
                 for (const feed of FEEDS[category]) {
                     try {
-                        // Google Script Apps Proxy - extrem stabil & umgeht CORS
-                        const proxy = "https://script.google.com/macros/s/AKfycbzGv9wg_LCEpY6SBlx789n_vT40YID_8u9E076uI8Y7UToT9K9k/exec?url=";
-                        const res = await fetch(proxy + encodeURIComponent(feed.u));
+                        // Verwendung von CORSProxy.io - spezialisiert auf Browser-Requests
+                        const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(feed.u)}`;
+                        const res = await fetch(proxyUrl);
                         const xmlText = await res.text();
                         
                         const parser = new DOMParser();
                         const doc = parser.parseFromString(xmlText, "text/xml");
+                        
+                        // Unterstützung für RSS (item) und Atom (entry)
                         const entries = Array.from(doc.querySelectorAll("item, entry"));
 
-                        const parsed = entries.map(e => ({
-                            title: e.querySelector("title")?.textContent || "",
-                            link: e.querySelector("link")?.textContent || e.querySelector("link")?.getAttribute("href") || "#",
-                            desc: (e.querySelector("description")?.textContent || e.querySelector("summary")?.textContent || "").replace(/<[^>]*>?/gm, '').substring(0, 180),
-                            src: feed.n,
-                            date: new Date(e.querySelector("pubDate, published, updated")?.textContent).getTime() || Date.now()
-                        }));
+                        const parsed = entries.map(e => {
+                            const title = e.querySelector("title")?.textContent || "";
+                            const link = e.querySelector("link")?.textContent || e.querySelector("link")?.getAttribute("href") || "#";
+                            const description = e.querySelector("description")?.textContent || e.querySelector("summary")?.textContent || "";
+                            const dateStr = e.querySelector("pubDate, published, updated")?.textContent || "";
+                            
+                            return {
+                                title,
+                                link,
+                                desc: description.replace(/<[^>]*>?/gm, '').substring(0, 180),
+                                src: feed.n,
+                                date: new Date(dateStr).getTime() || Date.now()
+                            };
+                        });
                         all = [...all, ...parsed];
-                    } catch (err) { console.error("Fehler:", feed.n); }
+                    } catch (err) { 
+                        console.error("Fehler bei Quelle:", feed.n, err); 
+                    }
                 }
                 setItems(all.sort((a, b) => b.date - a.date));
                 setLoading(false);
@@ -99,10 +110,13 @@
                     </nav>
                     {loading && <div className="loading-bar"></div>}
                     <main>
+                        {items.length === 0 && !loading && (
+                            <p style={{textAlign:'center', color: 'var(--accent)'}}>Daten konnten nicht geladen werden. Bitte Seite aktualisieren.</p>
+                        )}
                         {items.map((it, i) => (
                             <div key={i} className="article">
                                 <span className="article-source">{it.src}</span>
-                                <h3><a href={it.link} target="_blank">{it.title}</a></h3>
+                                <h3><a href={it.link} target="_blank" rel="noreferrer">{it.title}</a></h3>
                                 <p>{it.desc}...</p>
                                 <small style={{color: '#777'}}>{new Date(it.date).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})} Uhr</small>
                             </div>
