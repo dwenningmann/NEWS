@@ -9,37 +9,57 @@
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <style>
         :root { --paper: #fcfaf5; --ink: #1a1a1a; --border: #2f2f2f; --accent: #8b0000; }
-        body { background-color: #dcdcdc; color: var(--ink); font-family: 'Georgia', serif; margin: 0; padding: 20px; }
+        body { background-color: #dcdcdc; color: var(--ink); font-family: 'Georgia', serif; margin: 0; padding: 10px; }
         
-        .page { max-width: 950px; margin: 0 auto; background-color: var(--paper); box-shadow: 0 0 30px rgba(0,0,0,0.2); padding: 40px; border: 1px solid #ccc; }
+        .page { max-width: 950px; margin: 0 auto; background-color: var(--paper); box-shadow: 0 0 30px rgba(0,0,0,0.2); padding: 5%; border: 1px solid #ccc; min-height: 100vh; }
         
         header { text-align: center; border-bottom: 4px double var(--border); margin-bottom: 30px; }
-        .masthead { font-size: 4.5rem; font-weight: 900; letter-spacing: -2px; text-transform: uppercase; margin: 0; line-height: 1; }
-        .sub-header { display: flex; justify-content: space-between; padding: 10px 5px; font-family: 'Arial', sans-serif; font-size: 0.75rem; font-weight: bold; border-top: 1px solid var(--border); margin-top: 10px; }
+        
+        /* Responsive Titel */
+        .masthead { 
+            font-size: clamp(2.5rem, 10vw, 5rem); 
+            font-weight: 900; 
+            letter-spacing: -2px; 
+            text-transform: uppercase; 
+            margin: 0; 
+            line-height: 0.9; 
+        }
 
-        nav { display: flex; justify-content: center; gap: 15px; border-bottom: 1px solid var(--border); padding: 10px 0; margin-bottom: 30px; flex-wrap: wrap; }
-        nav button { background: none; border: none; font-family: 'Arial', sans-serif; text-transform: uppercase; font-size: 0.8rem; cursor: pointer; color: var(--ink); font-weight: bold; padding: 5px 10px; }
+        .sub-header { 
+            display: flex; 
+            justify-content: space-between; 
+            padding: 10px 5px; 
+            font-family: 'Arial', sans-serif; 
+            font-size: clamp(0.6rem, 2vw, 0.75rem); 
+            font-weight: bold; 
+            border-top: 1px solid var(--border); 
+            margin-top: 10px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        nav { display: flex; justify-content: center; gap: 10px; border-bottom: 1px solid var(--border); padding: 10px 0; margin-bottom: 30px; flex-wrap: wrap; }
+        nav button { background: none; border: none; font-family: 'Arial', sans-serif; text-transform: uppercase; font-size: 0.75rem; cursor: pointer; color: var(--ink); font-weight: bold; padding: 5px; }
         nav button.active { background-color: var(--ink); color: var(--paper); }
 
         .columns { display: grid; grid-template-columns: 2fr 1fr; gap: 40px; }
-        @media (max-width: 768px) { .columns { grid-template-columns: 1fr; } }
+        @media (max-width: 768px) { 
+            .columns { grid-template-columns: 1fr; } 
+            .page { padding: 20px; }
+        }
 
         .main-article { border-bottom: 1px solid #ddd; padding-bottom: 25px; margin-bottom: 25px; }
-        .main-article:last-child { border-bottom: none; }
-        
         .article-source { font-family: 'Arial', sans-serif; font-size: 0.7rem; text-transform: uppercase; color: var(--accent); font-weight: bold; display: block; margin-bottom: 5px; }
-        .main-article h3 { font-size: 1.8rem; margin: 0 0 10px 0; line-height: 1.1; }
+        .main-article h3 { font-size: 1.6rem; margin: 0 0 10px 0; line-height: 1.1; }
         .main-article h3 a { color: var(--ink); text-decoration: none; }
-        .main-article h3 a:hover { text-decoration: underline; }
-        .main-article p { font-size: 1.1rem; line-height: 1.5; color: #333; margin: 10px 0; }
-        .timestamp { font-family: 'Arial', sans-serif; font-size: 0.7rem; color: #777; }
-
-        .sidebar h2 { font-family: 'Arial', sans-serif; font-size: 1rem; border-bottom: 2px solid var(--border); padding-bottom: 5px; margin-top: 0; }
-        .sidebar-item { font-size: 0.9rem; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
-        .sidebar-item a { color: var(--ink); text-decoration: none; font-weight: bold; }
-
-        .loading-bar { height: 2px; background: var(--accent); width: 100%; animation: load 1.5s infinite; }
-        @keyframes load { 0% { opacity: 0.2; } 50% { opacity: 1; } 100% { opacity: 0.2; } }
+        .main-article p { font-size: 1.05rem; line-height: 1.5; color: #333; margin: 10px 0; }
+        
+        .sidebar h2 { font-family: 'Arial', sans-serif; font-size: 0.9rem; border-bottom: 2px solid var(--border); padding-bottom: 5px; margin-top: 0; }
+        .sidebar-item { font-size: 0.85rem; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+        
+        .weather-box { color: var(--accent); }
+        .loading-bar { height: 2px; background: var(--accent); width: 100%; animation: load 1.5s infinite; margin-bottom: 20px;}
+        @keyframes load { 0% { opacity: 0.1; } 50% { opacity: 1; } 100% { opacity: 0.1; } }
     </style>
 </head>
 <body>
@@ -54,18 +74,16 @@
             ],
             "Gesellschaft": [
                 { name: "ZEIT Online", url: "https://newsfeed.zeit.de/index" },
-                { name: "FAZ Gesellschaft", url: "https://www.faz.net/rss/aktuell/gesellschaft/" }
+                { name: "FAZ", url: "https://www.faz.net/rss/aktuell/gesellschaft/" }
             ],
             "Regionales": [
                 { name: "Stuttgarter Zeitung", url: "https://www.stuttgarter-zeitung.de/inhalt.stuttgart-rss.rss.feed.4947477b-6846-444c-9f6f-ef865e90d79b.rss" }
             ],
             "Sport": [
-                { name: "Sportschau", url: "https://www.sportschau.de/index~rss2.xml" },
-                { name: "Kicker News", url: "https://newsfeed.kicker.de/news/aktuell" }
+                { name: "Sportschau", url: "https://www.sportschau.de/index~rss2.xml" }
             ],
             "KI & Technik": [
-                { name: "Heise Online", url: "https://www.heise.de/rss/heise-atom.xml" },
-                { name: "Golem", url: "https://www.golem.de/rss.php?feed=RSS2.0" }
+                { name: "Heise Online", url: "https://www.heise.de/rss/heise-atom.xml" }
             ]
         };
 
@@ -73,6 +91,18 @@
             const [rubrik, setRubrik] = useState("Politik");
             const [articles, setArticles] = useState([]);
             const [loading, setLoading] = useState(false);
+            const [weather, setWeather] = useState("Lädt...");
+
+            // Wetter für Stuttgart holen
+            useEffect(() => {
+                fetch("https://api.open-meteo.com/v1/forecast?latitude=48.78&longitude=9.18&current_weather=true")
+                    .then(res => res.json())
+                    .then(data => {
+                        const temp = Math.round(data.current_weather.temperature);
+                        setWeather(`${temp}°C Stuttgart`);
+                    })
+                    .catch(() => setWeather("Stuttgart"));
+            }, []);
 
             const fetchNews = async (key) => {
                 setLoading(true);
@@ -97,9 +127,9 @@
                     <header>
                         <h1 className="masthead">Souverän</h1>
                         <div className="sub-header">
-                            <span>STUTTGART, DIENSTAG, 10. MÄRZ 2026</span>
-                            <span>NR. 01 / 2026</span>
-                            <span>FREIER JOURNALISMUS</span>
+                            <span>DIENSTAG, 10. MÄRZ 2026</span>
+                            <span className="weather-box">{weather}</span>
+                            <span>NR. 01 / FREIER JOURNALISMUS</span>
                         </div>
                     </header>
 
@@ -117,18 +147,18 @@
                                 <article key={i} className="main-article">
                                     <span className="article-source">{a.source}</span>
                                     <h3><a href={a.link} target="_blank" rel="noreferrer">{a.title}</a></h3>
-                                    <p>{a.description?.replace(/<[^>]*>?/gm, '').substring(0, 200)}...</p>
-                                    <span className="timestamp">{new Date(a.pubDate).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} Uhr</span>
+                                    <p>{a.description?.replace(/<[^>]*>?/gm, '').substring(0, 180)}...</p>
+                                    <span style={{fontSize: '0.7rem', color: '#777'}}>{new Date(a.pubDate).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} Uhr</span>
                                 </article>
                             ))}
                         </main>
 
                         <aside className="sidebar">
-                            <h2>KURZMELDUNGEN</h2>
-                            {articles.slice(8, 15).map((a, i) => (
+                            <h2>REGIONALE KURZNACHRICHTEN</h2>
+                            {articles.slice(8, 14).map((a, i) => (
                                 <div key={i} className="sidebar-item">
-                                    <a href={a.link} target="_blank" rel="noreferrer">{a.title}</a>
-                                    <div className="timestamp" style={{marginTop: '3px'}}>{a.source}</div>
+                                    <a href={a.link} target="_blank" rel="noreferrer" style={{color: 'inherit', textDecoration: 'none', fontWeight: 'bold'}}>{a.title}</a>
+                                    <div style={{fontSize: '0.7rem', color: '#777', marginTop: '3px'}}>{a.source}</div>
                                 </div>
                             ))}
                         </aside>
