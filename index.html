@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SOUVERÄN | Golden Master Edition</title>
+    <title>SOUVERÄN | Ultima Edition</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📰</text></svg>">
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -47,10 +47,12 @@
         .reader-body { line-height: 1.8; font-size: 1.15rem; }
         .reader-body img { display: block !important; float: none !important; clear: both !important; max-width: 300px !important; height: auto !important; margin: 30px auto !important; border: 1px solid #ddd; padding: 5px; background: #fff; }
 
-        .cover-story { text-align: center; border-bottom: 2px solid var(--ink); padding-bottom: 30px; margin-bottom: 30px; }
-        .cover-story h2 { font-size: clamp(1.4rem, 4vw, 2.5rem); margin: 10px 0; cursor: pointer; line-height: 1.1; }
-        .sub-stories { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; border-bottom: 1px solid #ccc; padding-bottom: 30px; margin-bottom: 30px; }
-        .sub-stories h3 { font-size: 1.2rem; cursor: pointer; margin: 5px 0; }
+        /* Titelseiten Fixes */
+        .cover-story { text-align: center; border-bottom: 2px solid var(--ink); padding-bottom: 30px; margin-bottom: 30px; width: 100%; box-sizing: border-box; }
+        .cover-story h2 { font-size: clamp(1.4rem, 4vw, 2.5rem); margin: 10px 0; cursor: pointer; line-height: 1.1; overflow-wrap: break-word; }
+        .sub-stories { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; border-bottom: 1px solid #ccc; padding-bottom: 30px; margin-bottom: 30px; width: 100%; box-sizing: border-box; }
+        .sub-stories h3 { font-size: 1.2rem; cursor: pointer; margin: 5px 0; overflow-wrap: break-word; }
+        @media (max-width: 600px) { .sub-stories { grid-template-columns: 1fr; } }
 
         .article { border-bottom: 1px solid #ccc; padding-bottom: 25px; margin-bottom: 25px; }
         .article h3 { font-size: 1.5rem; margin: 0 0 10px 0; line-height: 1.2; cursor: pointer; transition: color 0.2s; }
@@ -71,14 +73,14 @@
             "Sapere aude! Habe Mut, dich deines eigenen Verstandes zu bedienen. – Immanuel Kant",
             "Das Glück deines Lebens hängt von der Beschaffenheit deiner Gedanken ab. – Marc Aurel",
             "Wer die Freiheit aufgibt, um Sicherheit zu gewinnen, wird am Ende beides verlieren. – Benjamin Franklin",
-            "Alles, was wir hören, ist eine Meinung, kein Faktum. Alles, was wir sehen, ist eine Perspektive, keine Wahrheit. – Marc Aurel"
+            "Nichts auf der Welt ist so mächtig wie eine Idee, deren Zeit gekommen ist. – Victor Hugo"
         ];
 
         const FEEDS = {
             "Politik": [
+                { n: "Bundestag (hib)", u: "https://www.bundestag.de/static/rss/hib.xml" },
                 { n: "DLF", u: "https://www.deutschlandfunk.de/nachrichten-100.rss" },
-                { n: "DW", u: "https://rss.dw.com/xml/rss-de-all" },
-                { n: "Tagesschau", u: "https://www.tagesschau.de/newsticker.rss" }
+                { n: "DW", u: "https://rss.dw.com/xml/rss-de-all" }
             ],
             "Wirtschaft": [
                 { n: "Finanzwelt", u: "https://finanzmarktwelt.de/feed/" },
@@ -86,8 +88,9 @@
             ],
             "Wissen": [
                 { n: "Telepolis", u: "https://www.telepolis.de/news-atom.xml" },
+                { n: "LobbyControl", u: "https://www.lobbycontrol.de/feed/" },
                 { n: "Spektrum", u: "https://www.spektrum.de/rss/spektrum-alle-news.xml" },
-                { n: "LobbyControl", u: "https://www.lobbycontrol.de/feed/" }
+                { n: "Correctiv", u: "https://correctiv.org/feed/" }
             ],
             "Sport": [
                 { n: "Sportschau", u: "https://www.sportschau.de/index~rss2.xml" },
@@ -105,13 +108,13 @@
             const [cat, setCat] = useState("Home");
             const [items, setItems] = useState([]);
             const [homeItems, setHomeItems] = useState([]);
-            const [bookmarks, setBookmarks] = useState(JSON.parse(localStorage.getItem('souveran_master') || '[]'));
+            const [bookmarks, setBookmarks] = useState(JSON.parse(localStorage.getItem('souveran_vfinal') || '[]'));
             const [loading, setLoading] = useState(false);
             const [weather, setWeather] = useState({ temp: "...", icon: "☀️" });
             const [activeArt, setActiveArt] = useState(null);
             const [quoteIdx, setQuoteIdx] = useState(Math.floor(Math.random() * QUOTES.length));
 
-            useEffect(() => { localStorage.setItem('souveran_master', JSON.stringify(bookmarks)); }, [bookmarks]);
+            useEffect(() => { localStorage.setItem('souveran_vfinal', JSON.stringify(bookmarks)); }, [bookmarks]);
             useEffect(() => {
                 fetch("https://api.open-meteo.com/v1/forecast?latitude=48.78&longitude=9.18&current_weather=true")
                     .then(r => r.json()).then(d => setWeather({ temp: `${Math.round(d.current_weather.temperature)}°C`, icon: "☀️" }));
@@ -120,19 +123,20 @@
 
             const loadHomeData = async () => {
                 try {
-                    const res = await fetch(`https://corsproxy.io/?${encodeURIComponent(FEEDS["Politik"][0].u)}`);
+                    // Verwende DLF für die Titelseite als zuverlässigste Quelle
+                    const res = await fetch(`https://corsproxy.io/?${encodeURIComponent("https://www.deutschlandfunk.de/nachrichten-100.rss")}`);
                     const buf = await res.arrayBuffer();
                     const doc = new DOMParser().parseFromString(safeDecode(buf), "text/xml");
-                    const entries = Array.from(doc.querySelectorAll("item, entry")).slice(0, 10).map(e => ({
+                    const entries = Array.from(doc.querySelectorAll("item, entry")).slice(0, 5).map(e => ({
                         id: e.querySelector("link")?.textContent || Math.random().toString(),
                         title: (e.querySelector("title")?.textContent || "").trim(),
                         link: e.querySelector("link")?.textContent || "#",
                         desc: (e.querySelector("description, summary")?.textContent || "").replace(/<[^>]*>?/gm, ''),
                         full: e.querySelector("content\\:encoded, description")?.textContent || "",
-                        src: FEEDS["Politik"][0].n
+                        src: "DLF"
                     }));
                     setHomeItems(entries);
-                } catch (e) { console.error("Home Load Fail", e); }
+                } catch (e) { console.error("Home Load Error", e); }
             };
 
             const load = async (c) => {
@@ -144,16 +148,17 @@
                         const res = await fetch(`https://corsproxy.io/?${encodeURIComponent(f.u)}`);
                         const buf = await res.arrayBuffer();
                         const doc = new DOMParser().parseFromString(safeDecode(buf), "text/xml");
-                        all = [...all, ...Array.from(doc.querySelectorAll("item, entry")).map(e => ({
+                        const entries = Array.from(doc.querySelectorAll("item, entry")).map(e => ({
                             id: e.querySelector("link")?.textContent || Math.random().toString(),
                             title: (e.querySelector("title")?.textContent || "").trim(),
-                            link: e.querySelector("link")?.textContent || "#",
+                            link: e.querySelector("link")?.textContent || e.querySelector("link")?.getAttribute("href") || "#",
                             desc: (e.querySelector("description, summary")?.textContent || "").replace(/<[^>]*>?/gm, ''),
                             full: e.querySelector("content\\:encoded, description")?.textContent || "",
                             src: f.n,
                             date: new Date(e.querySelector("pubDate, published, updated")?.textContent).getTime() || Date.now()
-                        }))];
-                    } catch (e) {}
+                        }));
+                        all = [...all, ...entries];
+                    } catch (e) { console.warn(`Feed ${f.n} failed`); }
                 }
                 setItems(all.sort((a, b) => b.date - a.date));
                 setLoading(false);
@@ -180,12 +185,12 @@
                             <div className="reader-content">
                                 <div className="reader-controls">
                                     <button onClick={() => setActiveArt(null)} style={{cursor:'pointer', border:'none', background:'none', fontWeight:'bold', fontFamily:'Arial'}}>← ZURÜCK</button>
-                                    <button onClick={() => window.print()} style={{cursor:'pointer', border:'none', background:'none', color:'var(--gold)', fontWeight:'bold', fontSize:'0.7rem'}}>ARCHIVIEREN (PDF)</button>
+                                    <button onClick={() => window.print()} style={{cursor:'pointer', border:'none', background:'none', color:'var(--gold)', fontWeight:'bold', fontSize:'0.7rem'}}>PDF ARCHIV</button>
                                 </div>
                                 <span style={{display:'block', fontFamily:'Arial', color:'var(--accent)', fontSize:'0.7rem', fontWeight:'900', marginBottom:'10px'}}>{activeArt.src}</span>
                                 <h2 style={{fontSize:'1.8rem', lineHeight:1.1, marginBottom:'30px'}}>{activeArt.title}</h2>
                                 <div className="reader-body" dangerouslySetInnerHTML={{ __html: activeArt.full || activeArt.desc }}></div>
-                                <a href={activeArt.link} target="_blank" style={{display:'block', marginTop:'50px', color:'var(--accent)', fontWeight:'bold', textDecoration:'none', border:'1px solid var(--accent)', padding:'15px', textAlign:'center', fontFamily:'Arial'}}>QUELLE ONLINE BESUCHEN</a>
+                                <a href={activeArt.link} target="_blank" rel="noreferrer" style={{display:'block', marginTop:'50px', color:'var(--accent)', fontWeight:'bold', textDecoration:'none', border:'1px solid var(--accent)', padding:'15px', textAlign:'center', fontFamily:'Arial'}}>QUELLE BESUCHEN</a>
                             </div>
                         </div>
                     )}
@@ -215,26 +220,26 @@
                                     <div className="cover-story">
                                         <span style={{fontSize:'0.7rem', fontWeight:'bold', color:'var(--accent)'}}>TOP-THEMA</span>
                                         <h2 onClick={() => setActiveArt(homeItems[0])}>{homeItems[0].title}</h2>
-                                        <p style={{maxWidth:'750px', margin:'10px auto', fontSize:'1.1rem'}}>{homeItems[0].desc.substring(0, 200)}...</p>
+                                        <p style={{maxWidth:'750px', margin:'10px auto', fontSize:'1.15rem'}}>{homeItems[0].desc.substring(0, 250)}...</p>
                                     </div>
                                     <div className="sub-stories">
                                         <div>
-                                            <span style={{fontSize:'0.6rem', color: 'var(--gold)', fontWeight:'bold'}}>ZWEIT-THEMA</span>
+                                            <span style={{fontSize:'0.6rem', color: 'var(--gold)', fontWeight:'bold'}}>POLITIK</span>
                                             <h3 onClick={() => setActiveArt(homeItems[1])}>{homeItems[1].title}</h3>
                                         </div>
                                         <div style={{borderLeft: '1px solid #ccc', paddingLeft: '20px'}}>
-                                            <span style={{fontSize:'0.6rem', color: 'var(--gold)', fontWeight:'bold'}}>DRITT-THEMA</span>
+                                            <span style={{fontSize:'0.6rem', color: 'var(--gold)', fontWeight:'bold'}}>MELDUNG</span>
                                             <h3 onClick={() => setActiveArt(homeItems[2])}>{homeItems[2].title}</h3>
                                         </div>
                                     </div>
                                 </>
-                            ) : <div style={{padding:'40px', textAlign:'center'}}>Lade die Weltlage...</div>}
+                            ) : <div style={{padding:'40px', textAlign:'center'}}>Lade Weltlage...</div>}
                             
                             <div className="content-grid">
                                 <div style={{textAlign:'left'}}>
                                     <h4 style={{fontFamily:'Arial', borderBottom:'1px solid black', paddingBottom:'5px'}}>BIBLIOTHEK</h4>
-                                    {bookmarks.slice(0, 5).map((b, i) => <div key={i} onClick={() => setActiveArt(b)} style={{cursor:'pointer', fontWeight:'bold', marginBottom:'12px', fontSize:'0.9rem', borderBottom:'1px solid #eee', paddingBottom:'5px'}}>{b.title}</div>)}
-                                    {bookmarks.length === 0 && <p style={{fontSize:'0.8rem', color: '#888'}}>Markiere Artikel mit 🔖.</p>}
+                                    {bookmarks.slice(0, 5).map((b, i) => <div key={i} onClick={() => setActiveArt(b)} style={{cursor:'pointer', fontWeight:'bold', marginBottom:'12px', fontSize:'0.95rem', borderBottom:'1px solid #eee', paddingBottom:'5px'}}>{b.title}</div>)}
+                                    {bookmarks.length === 0 && <p style={{fontSize:'0.85rem', color:'#888'}}>Markiere Artikel mit 🔖.</p>}
                                 </div>
                                 <div className="quote-box">
                                     "{QUOTES[quoteIdx]}"
@@ -255,10 +260,11 @@
                                             }} style={{cursor:'pointer', opacity: bookmarks.find(b => b.id === it.id) ? 1 : 0.4}}>🔖</span>
                                         </div>
                                         <h3 onClick={() => setActiveArt(it)}>{it.title}</h3>
-                                        <p>{it.desc.substring(0, 200)}...</p>
+                                        <p>{it.desc.substring(0, 220)}...</p>
                                         {it.pers && it.pers.length > 0 && (
                                             <div className="cluster-box">
-                                                {it.pers.map((p, pi) => <div key={pi} onClick={() => setActiveArt(p)} style={{cursor:'pointer', marginBottom:'3px'}}><strong>{p.src}:</strong> {p.title}</div>)}
+                                                <span style={{fontSize:'0.65rem', fontWeight:'900', color:'var(--gold)', display:'block', marginBottom:'8px'}}>WEITERE PERSPEKTIVEN</span>
+                                                {it.pers.map((p, pi) => <div key={pi} onClick={() => setActiveArt(p)} style={{cursor:'pointer', marginBottom:'5px'}}><strong>{p.src}:</strong> {p.title}</div>)}
                                             </div>
                                         )}
                                     </div>
@@ -267,7 +273,7 @@
                             <aside>
                                 <div style={{fontFamily:'Arial', fontWeight:'bold', borderBottom:'2px solid black', marginBottom:'15px', fontSize:'0.85rem'}}>ARCHIV</div>
                                 {bookmarks.map((b, i) => (
-                                    <div key={i} style={{fontSize:'0.85rem', marginBottom:'10px', borderBottom:'1px solid #eee', paddingBottom:'10px'}}>
+                                    <div key={i} style={{fontSize:'0.9rem', marginBottom:'15px', borderBottom:'1px solid #eee', paddingBottom:'10px'}}>
                                         <span onClick={() => setActiveArt(b)} style={{cursor:'pointer', fontWeight:'bold', display:'block'}}>{b.title}</span>
                                         <div onClick={() => setBookmarks(bookmarks.filter(o => o.id !== b.id))} style={{color:'var(--accent)', cursor:'pointer', fontSize:'0.7rem', marginTop:'5px'}}>[ENTFERNEN]</div>
                                     </div>
