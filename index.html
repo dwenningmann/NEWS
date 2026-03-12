@@ -47,9 +47,8 @@
         .reader-body { line-height: 1.8; font-size: 1.15rem; }
         .reader-body img { display: block !important; float: none !important; clear: both !important; max-width: 300px !important; height: auto !important; margin: 30px auto !important; border: 1px solid #ddd; padding: 5px; background: #fff; }
 
-        /* Titelseiten Fixes */
-        .cover-story { text-align: center; border-bottom: 2px solid var(--ink); padding-bottom: 30px; margin-bottom: 30px; width: 100%; box-sizing: border-box; }
-        .cover-story h2 { font-size: clamp(1.4rem, 4vw, 2.5rem); margin: 10px 0; cursor: pointer; line-height: 1.1; overflow-wrap: break-word; }
+        .cover-story { text-align: center; border-bottom: 2px solid var(--ink); padding-bottom: 30px; margin-bottom: 30px; }
+        .cover-story h2 { font-size: clamp(1.4rem, 4vw, 2.5rem); margin: 10px 0; cursor: pointer; line-height: 1.1; }
         .sub-stories { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; border-bottom: 1px solid #ccc; padding-bottom: 30px; margin-bottom: 30px; width: 100%; box-sizing: border-box; }
         .sub-stories h3 { font-size: 1.2rem; cursor: pointer; margin: 5px 0; overflow-wrap: break-word; }
         @media (max-width: 600px) { .sub-stories { grid-template-columns: 1fr; } }
@@ -104,17 +103,25 @@
             return (utf8.includes('Ã') || utf8.includes('\uFFFD')) ? new TextDecoder('iso-8859-1').decode(u8) : utf8;
         };
 
+        const fetchFeed = async (url) => {
+            // Neuer Proxy-Dienst AllOrigins
+            const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
+            const res = await fetch(proxyUrl);
+            const data = await res.json();
+            return new DOMParser().parseFromString(data.contents, "text/xml");
+        };
+
         function App() {
             const [cat, setCat] = useState("Home");
             const [items, setItems] = useState([]);
             const [homeItems, setHomeItems] = useState([]);
-            const [bookmarks, setBookmarks] = useState(JSON.parse(localStorage.getItem('souveran_vfinal') || '[]'));
+            const [bookmarks, setBookmarks] = useState(JSON.parse(localStorage.getItem('souveran_master') || '[]'));
             const [loading, setLoading] = useState(false);
             const [weather, setWeather] = useState({ temp: "...", icon: "☀️" });
             const [activeArt, setActiveArt] = useState(null);
             const [quoteIdx, setQuoteIdx] = useState(Math.floor(Math.random() * QUOTES.length));
 
-            useEffect(() => { localStorage.setItem('souveran_vfinal', JSON.stringify(bookmarks)); }, [bookmarks]);
+            useEffect(() => { localStorage.setItem('souveran_master', JSON.stringify(bookmarks)); }, [bookmarks]);
             useEffect(() => {
                 fetch("https://api.open-meteo.com/v1/forecast?latitude=48.78&longitude=9.18&current_weather=true")
                     .then(r => r.json()).then(d => setWeather({ temp: `${Math.round(d.current_weather.temperature)}°C`, icon: "☀️" }));
@@ -123,10 +130,7 @@
 
             const loadHomeData = async () => {
                 try {
-                    // Verwende DLF für die Titelseite als zuverlässigste Quelle
-                    const res = await fetch(`https://corsproxy.io/?${encodeURIComponent("https://www.deutschlandfunk.de/nachrichten-100.rss")}`);
-                    const buf = await res.arrayBuffer();
-                    const doc = new DOMParser().parseFromString(safeDecode(buf), "text/xml");
+                    const doc = await fetchFeed("https://www.deutschlandfunk.de/nachrichten-100.rss");
                     const entries = Array.from(doc.querySelectorAll("item, entry")).slice(0, 5).map(e => ({
                         id: e.querySelector("link")?.textContent || Math.random().toString(),
                         title: (e.querySelector("title")?.textContent || "").trim(),
@@ -136,7 +140,7 @@
                         src: "DLF"
                     }));
                     setHomeItems(entries);
-                } catch (e) { console.error("Home Load Error", e); }
+                } catch (e) {}
             };
 
             const load = async (c) => {
@@ -145,9 +149,7 @@
                 let all = [];
                 for (const f of FEEDS[c]) {
                     try {
-                        const res = await fetch(`https://corsproxy.io/?${encodeURIComponent(f.u)}`);
-                        const buf = await res.arrayBuffer();
-                        const doc = new DOMParser().parseFromString(safeDecode(buf), "text/xml");
+                        const doc = await fetchFeed(f.u);
                         const entries = Array.from(doc.querySelectorAll("item, entry")).map(e => ({
                             id: e.querySelector("link")?.textContent || Math.random().toString(),
                             title: (e.querySelector("title")?.textContent || "").trim(),
@@ -200,9 +202,9 @@
                         <h1 className="masthead" onClick={() => setCat("Home")}>Souverän</h1>
                         <div className="slogan">Fakten statt Lärm</div>
                         <div className="meta-line">
-                            <span>11. MÄRZ 2026</span>
+                            <span>12. MÄRZ 2026</span>
                             <span>{weather.icon} {weather.temp} STUTTGART</span>
-                            <span>NR. 124 | GOLDEN MASTER</span>
+                            <span>NR. 126 | ULTIMA EDITION</span>
                         </div>
                     </header>
 
@@ -239,7 +241,7 @@
                                 <div style={{textAlign:'left'}}>
                                     <h4 style={{fontFamily:'Arial', borderBottom:'1px solid black', paddingBottom:'5px'}}>BIBLIOTHEK</h4>
                                     {bookmarks.slice(0, 5).map((b, i) => <div key={i} onClick={() => setActiveArt(b)} style={{cursor:'pointer', fontWeight:'bold', marginBottom:'12px', fontSize:'0.95rem', borderBottom:'1px solid #eee', paddingBottom:'5px'}}>{b.title}</div>)}
-                                    {bookmarks.length === 0 && <p style={{fontSize:'0.85rem', color:'#888'}}>Markiere Artikel mit 🔖.</p>}
+                                    {bookmarks.length === 0 && <p style={{fontSize:'0.85rem', color:'#888'}}>Markieren Sie Artikel mit 🔖.</p>}
                                 </div>
                                 <div className="quote-box">
                                     "{QUOTES[quoteIdx]}"
@@ -273,7 +275,7 @@
                             <aside>
                                 <div style={{fontFamily:'Arial', fontWeight:'bold', borderBottom:'2px solid black', marginBottom:'15px', fontSize:'0.85rem'}}>ARCHIV</div>
                                 {bookmarks.map((b, i) => (
-                                    <div key={i} style={{fontSize:'0.9rem', marginBottom:'15px', borderBottom:'1px solid #eee', paddingBottom:'10px'}}>
+                                    <div key={i} style={{fontSize:'0.85rem', marginBottom:'10px', borderBottom:'1px solid #eee', paddingBottom:'10px'}}>
                                         <span onClick={() => setActiveArt(b)} style={{cursor:'pointer', fontWeight:'bold', display:'block'}}>{b.title}</span>
                                         <div onClick={() => setBookmarks(bookmarks.filter(o => o.id !== b.id))} style={{color:'var(--accent)', cursor:'pointer', fontSize:'0.7rem', marginTop:'5px'}}>[ENTFERNEN]</div>
                                     </div>
