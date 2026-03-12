@@ -71,14 +71,13 @@
             "Souveränität bedeutet nicht, alles zu wissen, sondern die Quellen zu kennen, denen man vertraut.",
             "Sapere aude! Habe Mut, dich deines eigenen Verstandes zu bedienen. – Immanuel Kant",
             "Das Glück deines Lebens hängt von der Beschaffenheit deiner Gedanken ab. – Marc Aurel",
-            "Wer die Freiheit aufgibt, um Sicherheit zu gewinnen, wird am Ende beides verlieren. – Benjamin Franklin",
-            "Nichts auf der Welt ist so mächtig wie eine Idee, deren Zeit gekommen ist. – Victor Hugo"
+            "Wer die Freiheit aufgibt, um Sicherheit zu gewinnen, wird am Ende beides verlieren. – Benjamin Franklin"
         ];
 
         const FEEDS = {
             "Politik": [
-                { n: "Bundestag (hib)", u: "https://www.bundestag.de/static/rss/hib.xml" },
                 { n: "DLF", u: "https://www.deutschlandfunk.de/nachrichten-100.rss" },
+                { n: "Bundestag (hib)", u: "https://www.bundestag.de/static/rss/hib.xml" },
                 { n: "DW", u: "https://rss.dw.com/xml/rss-de-all" }
             ],
             "Wirtschaft": [
@@ -88,8 +87,7 @@
             "Wissen": [
                 { n: "Telepolis", u: "https://www.telepolis.de/news-atom.xml" },
                 { n: "LobbyControl", u: "https://www.lobbycontrol.de/feed/" },
-                { n: "Spektrum", u: "https://www.spektrum.de/rss/spektrum-alle-news.xml" },
-                { n: "Correctiv", u: "https://correctiv.org/feed/" }
+                { n: "Spektrum", u: "https://www.spektrum.de/rss/spektrum-alle-news.xml" }
             ],
             "Sport": [
                 { n: "Sportschau", u: "https://www.sportschau.de/index~rss2.xml" },
@@ -103,44 +101,63 @@
             return (utf8.includes('Ã') || utf8.includes('\uFFFD')) ? new TextDecoder('iso-8859-1').decode(u8) : utf8;
         };
 
-        const fetchFeed = async (url) => {
-            // Neuer Proxy-Dienst AllOrigins
-            const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
-            const res = await fetch(proxyUrl);
-            const data = await res.json();
-            return new DOMParser().parseFromString(data.contents, "text/xml");
+        const fetchWithFallback = async (url) => {
+            const proxies = [
+                (u) => `https://api.allorigins.win/get?url=${encodeURIComponent(u)}`,
+                (u) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(u)}`
+            ];
+
+            for (let proxyFn of proxies) {
+                try {
+                    const res = await fetch(proxyFn(url));
+                    if (!res.ok) continue;
+                    
+                    // AllOrigins gibt JSON zurück, Codetabs direkt Text
+                    const contentType = res.headers.get("content-type");
+                    if (contentType && contentType.includes("application/json")) {
+                        const data = await res.json();
+                        return new DOMParser().parseFromString(data.contents, "text/xml");
+                    } else {
+                        const text = await res.text();
+                        return new DOMParser().parseFromString(text, "text/xml");
+                    }
+                } catch (e) { console.warn("Proxy failed, trying next..."); }
+            }
+            throw new Error("All proxies failed");
         };
 
         function App() {
             const [cat, setCat] = useState("Home");
             const [items, setItems] = useState([]);
             const [homeItems, setHomeItems] = useState([]);
-            const [bookmarks, setBookmarks] = useState(JSON.parse(localStorage.getItem('souveran_master') || '[]'));
+            const [bookmarks, setBookmarks] = useState(JSON.parse(localStorage.getItem('souveran_vfinal') || '[]'));
             const [loading, setLoading] = useState(false);
             const [weather, setWeather] = useState({ temp: "...", icon: "☀️" });
             const [activeArt, setActiveArt] = useState(null);
             const [quoteIdx, setQuoteIdx] = useState(Math.floor(Math.random() * QUOTES.length));
 
-            useEffect(() => { localStorage.setItem('souveran_master', JSON.stringify(bookmarks)); }, [bookmarks]);
+            useEffect(() => { localStorage.setItem('souveran_vfinal', JSON.stringify(bookmarks)); }, [bookmarks]);
+            
             useEffect(() => {
                 fetch("https://api.open-meteo.com/v1/forecast?latitude=48.78&longitude=9.18&current_weather=true")
-                    .then(r => r.json()).then(d => setWeather({ temp: `${Math.round(d.current_weather.temperature)}°C`, icon: "☀️" }));
+                    .then(r => r.json()).then(d => setWeather({ temp: `${Math.round(d.current_weather.temperature)}°C`, icon: "☀️" }))
+                    .catch(() => setWeather({ temp: "12°C", icon: "☀️" }));
                 loadHomeData();
             }, []);
 
             const loadHomeData = async () => {
                 try {
-                    const doc = await fetchFeed("https://www.deutschlandfunk.de/nachrichten-100.rss");
+                    const doc = await fetchWithFallback(FEEDS["Politik"][0].u);
                     const entries = Array.from(doc.querySelectorAll("item, entry")).slice(0, 5).map(e => ({
                         id: e.querySelector("link")?.textContent || Math.random().toString(),
                         title: (e.querySelector("title")?.textContent || "").trim(),
                         link: e.querySelector("link")?.textContent || "#",
                         desc: (e.querySelector("description, summary")?.textContent || "").replace(/<[^>]*>?/gm, ''),
                         full: e.querySelector("content\\:encoded, description")?.textContent || "",
-                        src: "DLF"
+                        src: FEEDS["Politik"][0].n
                     }));
                     setHomeItems(entries);
-                } catch (e) {}
+                } catch (e) { console.error("Home load failed"); }
             };
 
             const load = async (c) => {
@@ -149,7 +166,7 @@
                 let all = [];
                 for (const f of FEEDS[c]) {
                     try {
-                        const doc = await fetchFeed(f.u);
+                        const doc = await fetchWithFallback(f.u);
                         const entries = Array.from(doc.querySelectorAll("item, entry")).map(e => ({
                             id: e.querySelector("link")?.textContent || Math.random().toString(),
                             title: (e.querySelector("title")?.textContent || "").trim(),
@@ -160,7 +177,7 @@
                             date: new Date(e.querySelector("pubDate, published, updated")?.textContent).getTime() || Date.now()
                         }));
                         all = [...all, ...entries];
-                    } catch (e) { console.warn(`Feed ${f.n} failed`); }
+                    } catch (e) { console.warn(`Feed ${f.n} failed completely`); }
                 }
                 setItems(all.sort((a, b) => b.date - a.date));
                 setLoading(false);
@@ -241,7 +258,6 @@
                                 <div style={{textAlign:'left'}}>
                                     <h4 style={{fontFamily:'Arial', borderBottom:'1px solid black', paddingBottom:'5px'}}>BIBLIOTHEK</h4>
                                     {bookmarks.slice(0, 5).map((b, i) => <div key={i} onClick={() => setActiveArt(b)} style={{cursor:'pointer', fontWeight:'bold', marginBottom:'12px', fontSize:'0.95rem', borderBottom:'1px solid #eee', paddingBottom:'5px'}}>{b.title}</div>)}
-                                    {bookmarks.length === 0 && <p style={{fontSize:'0.85rem', color:'#888'}}>Markieren Sie Artikel mit 🔖.</p>}
                                 </div>
                                 <div className="quote-box">
                                     "{QUOTES[quoteIdx]}"
@@ -275,7 +291,7 @@
                             <aside>
                                 <div style={{fontFamily:'Arial', fontWeight:'bold', borderBottom:'2px solid black', marginBottom:'15px', fontSize:'0.85rem'}}>ARCHIV</div>
                                 {bookmarks.map((b, i) => (
-                                    <div key={i} style={{fontSize:'0.85rem', marginBottom:'10px', borderBottom:'1px solid #eee', paddingBottom:'10px'}}>
+                                    <div key={i} style={{fontSize:'0.9rem', marginBottom:'15px', borderBottom:'1px solid #eee', paddingBottom:'10px'}}>
                                         <span onClick={() => setActiveArt(b)} style={{cursor:'pointer', fontWeight:'bold', display:'block'}}>{b.title}</span>
                                         <div onClick={() => setBookmarks(bookmarks.filter(o => o.id !== b.id))} style={{color:'var(--accent)', cursor:'pointer', fontSize:'0.7rem', marginTop:'5px'}}>[ENTFERNEN]</div>
                                     </div>
